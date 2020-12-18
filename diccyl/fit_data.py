@@ -39,10 +39,15 @@ def calc_Rz(c):
                      [sin(c),   cos(c), 0],
                      [     0,        0, 1]])
 
+def calc_radius_ellipse(a, b, thetarad):
+    t = thetarad
+    return  a*b/np.sqrt((a*np.sin(t))**2 + (b*np.cos(t))**2)
+
 
 def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         maxNumIter=1000, sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
-        y0=None, z0=None, clip_box=None, loadtxtkwargs={}):
+        y0=None, z0=None, clip_box=None, loadtxtkwargs={}, ftol=1e-8,
+        xtol=1e-8, gtol=1e-8):
     r"""Fit a best cylinder for a given set of measured data
 
     The coordinate transformation which must be performed in order to adjust
@@ -128,7 +133,37 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax]
     loadtxtkwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
+    ftol : float or None, optional
+        Tolerance for termination by the change of the cost function. Default
+        is 1e-8. The optimization process is stopped when  ``dF < ftol * F``,
+        and there was an adequate agreement between a local quadratic model and
+        the true model in the last step. If None, the termination by this
+        condition is disabled.
+    xtol : float or None, optional
+        Tolerance for termination by the change of the independent variables.
+        Default is 1e-8. The exact condition depends on the `method` used:
 
+            * For 'trf' and 'dogbox' : ``norm(dx) < xtol * (xtol + norm(x))``
+            * For 'lm' : ``Delta < xtol * norm(xs)``, where ``Delta`` is
+              a trust-region radius and ``xs`` is the value of ``x``
+              scaled according to `x_scale` parameter (see below).
+
+        If None, the termination by this condition is disabled.
+    gtol : float or None, optional
+        Tolerance for termination by the norm of the gradient. Default is 1e-8.
+        The exact condition depends on a `method` used:
+
+            * For 'trf' : ``norm(g_scaled, ord=np.inf) < gtol``, where
+              ``g_scaled`` is the value of the gradient scaled to account for
+              the presence of the bounds [STIR]_.
+            * For 'dogbox' : ``norm(g_free, ord=np.inf) < gtol``, where
+              ``g_free`` is the gradient with respect to the variables which
+              are not in the optimal state on the boundary.
+            * For 'lm' : the maximum absolute value of the cosine of angles
+              between columns of the Jacobian and the residual vector is less
+              than `gtol`, or the residual vector is zero.
+
+        If None, the termination by this condition is disabled.
     Returns
     -------
     out : dict
@@ -251,7 +286,7 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf),
                   (np.pi, np.pi, np.inf, np.inf, np.inf))
         res = least_squares(fun=calc_dist, x0=p, bounds=bounds, args=(input_pts,),
-                             ftol=1.e-12, xtol=1.e-12, max_nfev=1000000)
+                             max_nfev=1000000, xtol=xtol, ftol=ftol, gtol=gtol)
         popt = res.x
         Rx = calc_Rx(popt[0])
         Ry = calc_Ry(popt[1])
@@ -294,9 +329,10 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
                 x0=x0, y0=y0, z0=z0)
 
 
-def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, errorRtol=1.e-9,
-        maxNumIter=1000, sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
-        y0=None, z0=None, clip_box=None, loadtxtkwargs={}):
+def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
+        save=True, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
+        y0=None, z0=None, clip_box=None, loadtxtkwargs={}, ftol=1e-8,
+        xtol=1e-8, gtol=1e-8, a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6):
     r"""Fit a best cylinder for a given set of measured data
 
     The coordinate transformation which must be performed in order to adjust
@@ -309,13 +345,12 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
 
     .. math::
 
-     {x, y, z}.T = [Ry][Rx]{x+x0, y+y0, z+z0}.T
+     {x, y, z}.T = [Rz][Ry][Rx]{x+x0, y+y0, z+z0}.T
 
     Note that **five** variables are unknowns:
 
-    - the three components of the translation `\Delta x_0`, `\Delta y_0` and
-      `\Delta z_0`
-    - the rotation angles `\alpha` and `\beta`, respectively in this order
+    - the three components of the translation `\Delta x_0`, `\Delta y_0` and `\Delta z_0`
+    - the rotation angles `\alpha`, `\beta` and `\gamma`; respectively in this order
 
     The five unknowns are calculated iteratively in a non-linear least-squares
     problem (solved with ``scipy.optimize.least_squares``), where the measured data
@@ -362,28 +397,53 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
         in each corresponding column.
     H : float
         The nominal height of the cylinder.
-    a_expected : float, optional
-        The major radius of the oval cylinder, used as a first guess to find
+    a_expected, a_min, a_max : float, optional
+        The major radius of the elliptic cylinder, used as a first guess to find
         the best-fit major radius (``a_best_fit``). Note that if not specified more
         iterations may be required.
-    b_expected : float, optional
-        The minor radius of the oval cylinder, used as a first guess to find
+    b_expected, b_min, b_max : float, optional
+        The minor radius of the elliptic cylinder, used as a first guess to find
         the best-fit minor radius (``b_best_fit``). Note that if not specified more
         iterations may be required.
     save : bool, optional
         Whether to save an ``"output_best_fit.txt"`` in the working directory.
-    errorRtol : float, optional
-        The error tolerance for the best-fit radii to stop the iterations.
-    sample_size : int, optional
-        If the input file containing the measured data is too big it may
-        be convenient to use only a sample of it in order to calculate the
-        best fit.
-    alpha0, beta0, x0, y0 ,z0: float, optional
-        Initial guess for alpha, beta, x0, y0, z0.
+    alpha0, beta0, gamma0, x0, y0 ,z0: float, optional
+        Initial guess for alpha, beta, gamma, x0, y0, z0.
     clip_box : None or sequence, optional
         Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax]
     loadtxtkwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
+    ftol : float or None, optional
+        Tolerance for termination by the change of the cost function. Default
+        is 1e-8. The optimization process is stopped when  ``dF < ftol * F``,
+        and there was an adequate agreement between a local quadratic model and
+        the true model in the last step. If None, the termination by this
+        condition is disabled.
+    xtol : float or None, optional
+        Tolerance for termination by the change of the independent variables.
+        Default is 1e-8. The exact condition depends on the `method` used:
+
+            * For 'trf' and 'dogbox' : ``norm(dx) < xtol * (xtol + norm(x))``
+            * For 'lm' : ``Delta < xtol * norm(xs)``, where ``Delta`` is
+              a trust-region radius and ``xs`` is the value of ``x``
+              scaled according to `x_scale` parameter (see below).
+
+        If None, the termination by this condition is disabled.
+    gtol : float or None, optional
+        Tolerance for termination by the norm of the gradient. Default is 1e-8.
+        The exact condition depends on a `method` used:
+
+            * For 'trf' : ``norm(g_scaled, ord=np.inf) < gtol``, where
+              ``g_scaled`` is the value of the gradient scaled to account for
+              the presence of the bounds [STIR]_.
+            * For 'dogbox' : ``norm(g_free, ord=np.inf) < gtol``, where
+              ``g_free`` is the gradient with respect to the variables which
+              are not in the optimal state on the boundary.
+            * For 'lm' : the maximum absolute value of the cosine of angles
+              between columns of the Jacobian and the residual vector is less
+              than `gtol`, or the residual vector is zero.
+
+        If None, the termination by this condition is disabled.
 
     Returns
     -------
@@ -402,6 +462,8 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
             `\alpha` angle to rotate input data.
         ``out['betarad']`` : np.ndarray
             `\beta` angle to rotate input data.
+        ``out['gammarad']`` : np.ndarray
+            `\gamma` angle to rotate input data.
         ``out['input_pts']`` : np.ndarray
             The input points in a `3 \times N` 2-D array.
         ``out['output_pts']`` : np.ndarray
@@ -412,12 +474,12 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
 
     1) General usage
 
-    For a given oval cylinder with expected radii and height of ``a_expected``,
+    For a given elliptic cylinder with expected radii and height of ``a_expected``,
     ``b_expected`` and ``H``::
 
-        from dicpostproc.fit_data import best_fit_oval_cylinder
+        from dicpostproc.fit_data import best_fit_elliptic_cylinder
 
-        out = best_fit_oval_cylinder(path, H=H, a_expected=a_expected,
+        out = best_fit_elliptic_cylinder(path, H=H, a_expected=a_expected,
         b_expected=b_expected)
         a_best_fit = out['a_best_fit']
         b_best_fit = out['b_best_fit']
@@ -432,11 +494,12 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
 
         Rx = calc_Rx(alpharad)
         Ry = calc_Ry(betarad)
-        xnew, ynew, znew = (Ry @ Rx).dot(np.vstack((x + x0, y + y0, z + z0)))
+        Rz = calc_Rz(gammarad)
+        xnew, ynew, znew = (Rz @ Ry @ Rx).dot(np.vstack((x + x0, y + y0, z + z0)))
 
     and the inverse transformation::
 
-        x, y, z = (Rx.T @ Ry.T).dot(np.vstack((xnew, ynew, znew))) - np.array([x0, y0, y0])
+        x, y, z = (Rx.T @ Ry.T @ Rz.T).dot(np.vstack((xnew, ynew, znew))) - np.array([x0, y0, y0])
 
 
 
@@ -448,11 +511,6 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
 
     if input_pts.shape[0] != 3:
         raise ValueError('Input does not have the format: "x, y, z"')
-
-    if sample_size:
-        num = input_pts.shape[1]
-        if sample_size < num:
-            input_pts = input_pts[:, sample(range(num), int(sample_size))]
 
     if clip_box is not None:
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
@@ -470,29 +528,40 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
     a = a_expected
     b = b_expected
 
-    def calc_dist(p, input_pts):
+    def calc_dist_cylinder(p, input_pts):
         Rx = calc_Rx(p[0])
         Ry = calc_Ry(p[1])
-        x0, y0, z0, a, b = p[2:]
-        xn, yn, zn = Ry.dot(Rx.dot(input_pts + np.array([x0, y0, z0])[:, None]))
+        x0, y0, z0 = p[2:]
+        xn, yn, zn = Ry @ Rx @ (input_pts + np.array([x0, y0, z0])[:, None])
+        t = np.arctan2(yn, xn)
+        dr = np.sqrt(xn**2 + yn**2) - a_expected
+        dist = np.sqrt(dr*dr)
+        return dist
+
+    def calc_dist_ellipse(p, interm_pts):
+        Rz = calc_Rz(p[0])
+        a, b = p[1:]
+        xn, yn, zn = Rz @ interm_pts
+        t = np.arctan2(yn, xn)
+        rellipse = calc_radius_ellipse(a, b, t)
+        dr = np.sqrt(xn**2 + yn**2) - rellipse
+        dist = np.sqrt(dr*dr)
+        return dist
+
+    def calc_dist_dz(z_offset, interm_pts):
+        xn, yn, zn = interm_pts
+        zn = zn + z_offset
         dz = np.zeros_like(zn)
-        factor = 1
         # point below the bottom edge
         mask = zn < 0
-        dz[mask] = -zn[mask]*factor
-
+        dz[mask] = -zn[mask]
         # point inside the cylinder
         pass
         #dz[(zn >= 0) & (zn <= H)] *= 0
-
         # point above the top edge
         mask = zn > H
-        dz[mask] = (zn[mask] - H)*factor
-
-        t = np.arctan2(yn, xn)
-        rellipsis = a*b*np.sqrt(1/(a**2*np.sin(t)**2 + b**2*np.cos(t)**2))
-        dr = rellipsis - np.sqrt(xn**2 + yn**2)
-        dist = np.sqrt(dr**2 + dz**2)
+        dz[mask] = (zn[mask] - H)
+        dist = np.sqrt(dz*dz)
         return dist
 
     # initial guess for the optimization variables
@@ -504,28 +573,55 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
         y0 = 2*y.mean()
     if z0 is None:
         z0 = 2*z.mean()
-    p = [alpha0, beta0, x0, y0, z0, a, b]
 
     # performing the least_squares analysis
+    p = [alpha0, beta0, x0, y0, z0]
     bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf),
               (np.pi, np.pi, np.inf, np.inf, np.inf))
-    res = least_squares(fun=calc_dist, x0=p, bounds=bounds, args=(input_pts,),
-                         ftol=1.e-12, xtol=1.e-12, max_nfev=1000000)
+    res = least_squares(fun=calc_dist_cylinder, x0=p, bounds=bounds,
+            args=(input_pts,), max_nfev=1000000, xtol=xtol, ftol=ftol,
+            gtol=gtol, jac='3-point')
+    print('least_squares status', res.message)
     popt = res.x
-    Rx = calc_Rx(popt[0])
-    Ry = calc_Ry(popt[1])
-    x0, y0, z0, a_best_fit, b_best_fit = popt[2:]
-    output_pts = Ry.dot(Rx.dot(input_pts + np.array([x0, y0, z0])[:, None]))
+    alpha = popt[0]
+    beta = popt[1]
+    Rx = calc_Rx(alpha)
+    Ry = calc_Ry(beta)
+    x0, y0, z0 = popt[2:]
+    interm_pts1 = (Ry @ Rx @ (input_pts + np.array([x0, y0, z0])[:, None]))
+
+    p = [gamma0, a_expected, b_expected]
+    bounds = ((-np.pi, a_min, b_min),
+              (np.pi, a_max, b_max))
+    res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
+            args=(interm_pts1, ), max_nfev=1000000, xtol=xtol, ftol=ftol,
+            gtol=gtol, jac='3-point')
+    print('least_squares status', res.message)
+    popt = res.x
+    gamma = popt[0]
+    Rz = calc_Rz(gamma)
+    a_best_fit, b_best_fit = popt[1:]
+    interm_pts2 = Rz @ interm_pts1
+
+    z_offset = -1.
+    bounds = ([-np.inf], [+np.inf])
+    res = least_squares(fun=calc_dist_dz, x0=z_offset, bounds=bounds,
+            args=(interm_pts2, ), max_nfev=1000000, xtol=xtol, ftol=ftol,
+            gtol=gtol, jac='3-point')
+    z_offset = res.x
+    interm_pts2[2] += z_offset
+
+    output_pts = interm_pts2
     x, y, z = output_pts
-    mask = (z>=0) & (z<=H)
 
-
-    alpha, beta, x0, y0, z0 = popt
     log('Translation:')
     log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0))
     log('')
     log('Rotation angles:')
-    log('alpha: {0} rad; beta: {1} rad'.format(alpha, beta))
+    log('alpha: {0} rad; beta: {1} rad; gamma: {2} rad'.format(alpha, beta, gamma))
+    log('')
+    log('Longitudinal offset:')
+    log('z_offset: {0}'.format(z_offset))
     log('')
     log('Best fit radii: a={0}, b={1}'.format(a_best_fit, b_best_fit))
     log('')
@@ -539,7 +635,8 @@ def best_fit_oval_cylinder(path, H, a_expected=10., b_expected=10., save=True, e
                 output_pts=output_pts,
                 alpharad=alpha,
                 betarad=beta,
-                x0=x0, y0=y0, z0=z0)
+                gammarad=gamma,
+                x0=x0, y0=y0, z0=z0, z_offset=z_offset)
 
 
 def best_fit_cone(path, H, alphadeg, R_expected=10., save=True,
