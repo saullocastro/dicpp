@@ -591,8 +591,8 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     interm_pts1 = (Ry @ Rx @ (input_pts + np.array([x0, y0, z0])[:, None]))
 
     p = [gamma0, a_expected, b_expected]
-    bounds = ((-np.pi, a_min, b_min),
-              (np.pi, a_max, b_max))
+    bounds = ((-np.pi/2, a_min, b_min),
+              (+np.pi/2, a_max, b_max))
     res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
             args=(interm_pts1, ), max_nfev=1000000, xtol=xtol, ftol=ftol,
             gtol=gtol, jac='3-point')
