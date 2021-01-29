@@ -46,8 +46,9 @@ def calc_radius_ellipse(a, b, thetarad):
 
 def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         maxNumIter=1000, sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
-        y0=None, z0=None, clip_box=None, loadtxtkwargs={}, ftol=1e-8,
-        xtol=1e-8, gtol=1e-8):
+        y0=None, z0=None, clip_box=None, loadtxt_kwargs={},
+        ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None, method='trf',
+            max_nfev=1000000, jac='3-point')):
     r"""Fit a best cylinder for a given set of measured data
 
     The coordinate transformation which must be performed in order to adjust
@@ -123,47 +124,19 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         The error tolerance for the best-fit radius to stop the iterations.
     maxNumIter : int, optional
         The maximum number of iterations for the best-fit radius.
-    sample_size : int, optional
+    sample_size : None or int, optional
         If the input file containing the measured data is too big it may
         be convenient to use only a sample of it in order to calculate the
         best fit.
     alpha0, beta0, x0, y0 ,z0: float, optional
         Initial guess for alpha, beta, x0, y0, z0.
     clip_box : None or sequence, optional
-        Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax]
-    loadtxtkwargs : dict, optional
-        Keyword arguments passed to ``np.loadtxt``
-    ftol : float or None, optional
-        Tolerance for termination by the change of the cost function. Default
-        is 1e-8. The optimization process is stopped when  ``dF < ftol * F``,
-        and there was an adequate agreement between a local quadratic model and
-        the true model in the last step. If None, the termination by this
-        condition is disabled.
-    xtol : float or None, optional
-        Tolerance for termination by the change of the independent variables.
-        Default is 1e-8. The exact condition depends on the `method` used:
+        Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax].
+    loadtxt_kwargs : dict, optional
+        Keyword arguments passed to ``np.loadtxt``.
+    ls_kwargs : dict, optional
+        Keyword arguments passed to ``scipy.optimize.least_squares``.
 
-            * For 'trf' and 'dogbox' : ``norm(dx) < xtol * (xtol + norm(x))``
-            * For 'lm' : ``Delta < xtol * norm(xs)``, where ``Delta`` is
-              a trust-region radius and ``xs`` is the value of ``x``
-              scaled according to `x_scale` parameter (see below).
-
-        If None, the termination by this condition is disabled.
-    gtol : float or None, optional
-        Tolerance for termination by the norm of the gradient. Default is 1e-8.
-        The exact condition depends on a `method` used:
-
-            * For 'trf' : ``norm(g_scaled, ord=np.inf) < gtol``, where
-              ``g_scaled`` is the value of the gradient scaled to account for
-              the presence of the bounds [STIR]_.
-            * For 'dogbox' : ``norm(g_free, ord=np.inf) < gtol``, where
-              ``g_free`` is the gradient with respect to the variables which
-              are not in the optimal state on the boundary.
-            * For 'lm' : the maximum absolute value of the cosine of angles
-              between columns of the Jacobian and the residual vector is less
-              than `gtol`, or the residual vector is zero.
-
-        If None, the termination by this condition is disabled.
     Returns
     -------
     out : dict
@@ -183,6 +156,8 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
             `\beta` angle to rotate input data.
         ``out['input_pts']`` : np.ndarray
             The input points in a `3 \times N` 2-D array.
+        ``out['clip_box_mask']`` : np.ndarray
+            The mask after applying the clip_box in a `N` 1-D boolean array.
         ``out['output_pts']`` : np.ndarray
             The transformed points in a `3 \times N` 2-D array.
 
@@ -221,12 +196,12 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
     if isinstance(path, np.ndarray):
         input_pts = path.T
     else:
-        input_pts = np.loadtxt(path, unpack=True, **loadtxtkwargs)
+        input_pts = np.loadtxt(path, unpack=True, **loadtxt_kwargs)
 
     if input_pts.shape[0] != 3:
         raise ValueError('Input does not have the format: "x, y, z"')
 
-    if sample_size:
+    if sample_size is not None:
         num = input_pts.shape[1]
         if sample_size < num:
             input_pts = input_pts[:, sample(range(num), int(sample_size))]
@@ -234,25 +209,27 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
     if clip_box is not None:
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
         x, y, z = input_pts
-        valid = ((clip_box[0] <= x) &
+        clip_box_mask = ((clip_box[0] <= x) &
                  (x <= clip_box[1]) &
                  (clip_box[2] <= y) &
                  (y <= clip_box[3]) &
                  (clip_box[4] <= z) &
                  (z <= clip_box[5]))
-        input_pts = input_pts[:, valid]
-
+        input_pts_clip = input_pts[:, clip_box_mask].copy()
+    else:
+        clip_box_mask = np.ones(input_pts.shape[1]).astype(bool)
+        input_pts_clip = input_pts.copy()
 
     i = 0
     R = R_expected
     while i <= maxNumIter:
         i += 1
 
-        def calc_dist(p, input_pts):
+        def calc_dist(p, input_pts_clip):
             Rx = calc_Rx(p[0])
             Ry = calc_Ry(p[1])
             x0, y0, z0 = p[2:]
-            xn, yn, zn = Ry.dot(Rx.dot(input_pts + np.array([x0, y0, z0])[:, None]))
+            xn, yn, zn = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
             dz = np.zeros_like(zn)
             factor = 1
             # point below the bottom edge
@@ -273,7 +250,7 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
 
         # initial guess for the optimization variables
         # the variables are alpha, beta, x0, y0, z0
-        x, y, z = input_pts
+        x, y, z = input_pts_clip
         if x0 is None:
             x0 = 2*x.mean()
         if y0 is None:
@@ -285,13 +262,13 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         # performing the least_squares analysis
         bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf),
                   (np.pi, np.pi, np.inf, np.inf, np.inf))
-        res = least_squares(fun=calc_dist, x0=p, bounds=bounds, args=(input_pts,),
-                             max_nfev=1000000, xtol=xtol, ftol=ftol, gtol=gtol)
+        res = least_squares(fun=calc_dist, x0=p, bounds=bounds,
+                args=(input_pts_clip,), **ls_kwargs)
         popt = res.x
         Rx = calc_Rx(popt[0])
         Ry = calc_Ry(popt[1])
         x0, y0, z0 = popt[2:]
-        output_pts = Ry.dot(Rx.dot(input_pts + np.array([x0, y0, z0])[:, None]))
+        output_pts = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
         x, y, z = output_pts
         mask = (z>=0) & (z<=H)
         R_best_fit = np.sqrt(x[mask]**2 + y[mask]**2).mean()
@@ -323,6 +300,7 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
 
     return dict(R_best_fit=R_best_fit,
                 input_pts=input_pts,
+                clip_box_mask=clip_box_mask,
                 output_pts=output_pts,
                 alpharad=alpha,
                 betarad=beta,
@@ -331,8 +309,10 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
 
 def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         save=True, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
-        y0=None, z0=None, clip_box=None, loadtxtkwargs={}, ftol=1e-8,
-        xtol=1e-8, gtol=1e-8, a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6):
+        y0=None, z0=None, clip_box=None,
+        a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6, loadtxt_kwargs={},
+        ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None, method='trf',
+            max_nfev=1000000, jac='3-point')):
     r"""Fit a best cylinder for a given set of measured data
 
     The coordinate transformation which must be performed in order to adjust
@@ -411,39 +391,10 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         Initial guess for alpha, beta, gamma, x0, y0, z0.
     clip_box : None or sequence, optional
         Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax]
-    loadtxtkwargs : dict, optional
+    loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
-    ftol : float or None, optional
-        Tolerance for termination by the change of the cost function. Default
-        is 1e-8. The optimization process is stopped when  ``dF < ftol * F``,
-        and there was an adequate agreement between a local quadratic model and
-        the true model in the last step. If None, the termination by this
-        condition is disabled.
-    xtol : float or None, optional
-        Tolerance for termination by the change of the independent variables.
-        Default is 1e-8. The exact condition depends on the `method` used:
-
-            * For 'trf' and 'dogbox' : ``norm(dx) < xtol * (xtol + norm(x))``
-            * For 'lm' : ``Delta < xtol * norm(xs)``, where ``Delta`` is
-              a trust-region radius and ``xs`` is the value of ``x``
-              scaled according to `x_scale` parameter (see below).
-
-        If None, the termination by this condition is disabled.
-    gtol : float or None, optional
-        Tolerance for termination by the norm of the gradient. Default is 1e-8.
-        The exact condition depends on a `method` used:
-
-            * For 'trf' : ``norm(g_scaled, ord=np.inf) < gtol``, where
-              ``g_scaled`` is the value of the gradient scaled to account for
-              the presence of the bounds [STIR]_.
-            * For 'dogbox' : ``norm(g_free, ord=np.inf) < gtol``, where
-              ``g_free`` is the gradient with respect to the variables which
-              are not in the optimal state on the boundary.
-            * For 'lm' : the maximum absolute value of the cosine of angles
-              between columns of the Jacobian and the residual vector is less
-              than `gtol`, or the residual vector is zero.
-
-        If None, the termination by this condition is disabled.
+    ls_kwargs : dict, optional
+        Keyword arguments passed to ``scipy.optimize.least_squares``.
 
     Returns
     -------
@@ -466,6 +417,8 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
             `\gamma` angle to rotate input data.
         ``out['input_pts']`` : np.ndarray
             The input points in a `3 \times N` 2-D array.
+        ``out['clip_box_mask']`` : np.ndarray
+            The mask after applying the clip_box in a `N` 1-D boolean array.
         ``out['output_pts']`` : np.ndarray
             The transformed points in a `3 \times N` 2-D array.
 
@@ -507,7 +460,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     if isinstance(path, np.ndarray):
         input_pts = path.T
     else:
-        input_pts = np.loadtxt(path, unpack=True, **loadtxtkwargs)
+        input_pts = np.loadtxt(path, unpack=True, **loadtxt_kwargs)
 
     if input_pts.shape[0] != 3:
         raise ValueError('Input does not have the format: "x, y, z"')
@@ -515,24 +468,26 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     if clip_box is not None:
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
         x, y, z = input_pts
-        valid = ((clip_box[0] <= x) &
+        clip_box_mask = ((clip_box[0] <= x) &
                  (x <= clip_box[1]) &
                  (clip_box[2] <= y) &
                  (y <= clip_box[3]) &
                  (clip_box[4] <= z) &
                  (z <= clip_box[5]))
-        input_pts = input_pts[:, valid]
-
+        input_pts_clip = input_pts[:, clip_box_mask].copy()
+    else:
+        clip_box_mask = np.ones(input_pts.shape[1]).astype(bool)
+        input_pts_clip = input_pts.copy()
 
     i = 0
     a = a_expected
     b = b_expected
 
-    def calc_dist_cylinder(p, input_pts):
+    def calc_dist_cylinder(p, input_pts_clip):
         Rx = calc_Rx(p[0])
         Ry = calc_Ry(p[1])
         x0, y0, z0 = p[2:]
-        xn, yn, zn = Ry @ Rx @ (input_pts + np.array([x0, y0, z0])[:, None])
+        xn, yn, zn = Ry @ Rx @ (input_pts_clip + np.array([x0, y0, z0])[:, None])
         t = np.arctan2(yn, xn)
         dr = np.sqrt(xn**2 + yn**2) - a_expected
         dist = np.sqrt(dr*dr)
@@ -566,21 +521,20 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
 
     # initial guess for the optimization variables
     # the variables are alpha, beta, x0, y0, z0
-    x, y, z = input_pts
+    x, y, z = input_pts_clip
     if x0 is None:
-        x0 = 2*x.mean()
+        x0 = x.mean()
     if y0 is None:
-        y0 = 2*y.mean()
+        y0 = y.mean()
     if z0 is None:
-        z0 = 2*z.mean()
+        z0 = z.mean()
 
     # performing the least_squares analysis
     p = [alpha0, beta0, x0, y0, z0]
     bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf),
               (np.pi, np.pi, np.inf, np.inf, np.inf))
     res = least_squares(fun=calc_dist_cylinder, x0=p, bounds=bounds,
-            args=(input_pts,), max_nfev=1000000, xtol=xtol, ftol=ftol,
-            gtol=gtol, jac='3-point')
+            args=(input_pts_clip,), **ls_kwargs)
     print('least_squares status', res.message)
     popt = res.x
     alpha = popt[0]
@@ -588,14 +542,13 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     Rx = calc_Rx(alpha)
     Ry = calc_Ry(beta)
     x0, y0, z0 = popt[2:]
-    interm_pts1 = (Ry @ Rx @ (input_pts + np.array([x0, y0, z0])[:, None]))
+    interm_pts1 = (Ry @ Rx @ (input_pts_clip + np.array([x0, y0, z0])[:, None]))
 
     p = [gamma0, a_expected, b_expected]
     bounds = ((-np.pi/2, a_min, b_min),
               (+np.pi/2, a_max, b_max))
     res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
-            args=(interm_pts1, ), max_nfev=1000000, xtol=xtol, ftol=ftol,
-            gtol=gtol, jac='3-point')
+            args=(interm_pts1, ), **ls_kwargs)
     print('least_squares status', res.message)
     popt = res.x
     gamma = popt[0]
@@ -606,8 +559,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     z_offset = -1.
     bounds = ([-np.inf], [+np.inf])
     res = least_squares(fun=calc_dist_dz, x0=z_offset, bounds=bounds,
-            args=(interm_pts2, ), max_nfev=1000000, xtol=xtol, ftol=ftol,
-            gtol=gtol, jac='3-point')
+            args=(interm_pts2, ), **ls_kwargs)
     z_offset = res.x
     interm_pts2[2] += z_offset
 
@@ -632,6 +584,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     return dict(a_best_fit=a_best_fit,
                 b_best_fit=b_best_fit,
                 input_pts=input_pts,
+                clip_box_mask=clip_box_mask,
                 output_pts=output_pts,
                 alpharad=alpha,
                 betarad=beta,
@@ -651,7 +604,7 @@ def best_fit_cone(path, H, alphadeg, R_expected=10., save=True,
 
 def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
         rotatedeg=None, filter_m0=None, filter_n0=None, sample_size=None,
-        loadtxtkwargs={}):
+        loadtxt_kwargs={}):
     r"""Find the coefficients that best fit the `w_0` imperfection
 
     The measured data will be fit using one of the following functions,
@@ -727,11 +680,11 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
         The values of ``m0`` that should be filtered (see :func:`.filter_c0`).
     filter_n0 : list, optional
         The values of ``n0`` that should be filtered (see :func:`.filter_c0`).
-    sample_size : int or None, optional
+    sample_size : None or int, optional
         An in  specifying how many points of the imperfection file should
         be used. If ``None`` is used all points file will be used in the
         computations.
-    loadtxtkwargs : dict, optional
+    loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
 
     Returns
@@ -756,7 +709,7 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
         input_pts = path
         path = 'unmamed.txt'
     else:
-        input_pts = np.loadtxt(path, **loadtxtkwargs)
+        input_pts = np.loadtxt(path, **loadtxt_kwargs)
 
     if input_pts.shape[1] != 3:
         raise ValueError('Input does not have the format: "theta, z, imp"')
@@ -767,7 +720,7 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
     log('Finding c0 coefficients for {0}'.format(str(os.path.basename(path))))
     log('using funcnum {0}'.format(funcnum), level=1)
 
-    if sample_size:
+    if sample_size is not None:
         num = input_pts.shape[0]
         if sample_size < num:
             input_pts = input_pts[sample(range(num), int(sample_size))]
