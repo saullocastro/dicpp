@@ -314,7 +314,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
     bounds = ([-np.inf], [+np.inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts, ), **ls_kwargs)
-    z1 = res.x
+    z1 = res.x[0]
     interm_pts[2] += z1
 
     output_pts = interm_pts
@@ -424,8 +424,8 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         iterations may be required.
     save : bool, optional
         Whether to save an ``"output_best_fit.txt"`` in the working directory.
-    alpha0, beta0, gamma0, x0, y0 ,z0: float, optional
-        Initial guess for alpha, beta, gamma, x0, y0, z0.
+    alpha0, beta0, gamma0, x0, y0 ,z0, z1: float, optional
+        Initial guess for alpha, beta, gamma, x0, y0, z0, z1.
     clip_box : None or sequence, optional
         Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax]
     loadtxt_kwargs : dict, optional
@@ -598,7 +598,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     bounds = ([-np.inf], [+np.inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts2, ), **ls_kwargs)
-    z1 = res.x
+    z1 = res.x[0]
     interm_pts2[2] += z1
 
     output_pts = interm_pts2
