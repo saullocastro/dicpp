@@ -44,9 +44,12 @@ def calc_radius_ellipse(a, b, thetarad):
     return  a*b/np.sqrt((a*np.sin(t))**2 + (b*np.cos(t))**2)
 
 
-def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
-        maxNumIter=1000, sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
-        y0=None, z0=None, clip_box=None, loadtxt_kwargs={},
+def best_fit_cylinder(path, H, R_expected=10.,
+        best_fit_with_given_radius=False,
+        save=True,
+        sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
+        y0=None, z0=None, z1=None, clip_box=None,
+        R_min=-1e6, R_max=+1e6, loadtxt_kwargs={},
         ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None, method='trf',
             max_nfev=1000000, jac='3-point')):
     r"""Fit a best cylinder for a given set of measured data
@@ -62,16 +65,18 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
     .. math::
 
      {x, y, z}.T = [Ry][Rx]{x+x0, y+y0, z+z0}.T
+     z += z1
 
-    Note that **five** variables are unknowns:
+    Note that there are **six** unknown variables:
 
     - the three components of the translation `\Delta x_0`, `\Delta y_0` and
       `\Delta z_0`
     - the rotation angles `\alpha` and `\beta`, respectively in this order
+    - the final axial translation `\Delta z_1`
 
-    The five unknowns are calculated iteratively in a non-linear least-squares
+    The six unknowns are calculated iteratively in a non-linear least-squares
     problem (solved with ``scipy.optimize.least_squares``), where the measured data
-    is transformed to the reference coordinate system and there compared with
+    is transformed to the reference coordinate system and then compared with
     a reference cylinder in order to compute the residual error using:
 
     .. math::
@@ -79,11 +84,12 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         [T]
         \begin{Bmatrix} x_m \\ y_m \\ z_m \\ 1 \end{Bmatrix}
         \\
+        z_{ref} += z_1 \\
         Error = \sqrt{(\Delta r)^2 + (\Delta z)^2}
 
     where:
 
-    - `x_m`, `y_m` and `z_m` are the data coordinates in the data coordinate
+    - `x_m`, `y_m` and `z_m` are the data coordinates in the raw data coordinate
       system
     - `x_{ref}` `x_{ref}` are the data coordinates in the :ref:`reference
       coordinate system <figure_conecyl>`
@@ -98,9 +104,9 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
                          z_{ref} - H, & \text{if } z_{ref} > H \\
                        \end{cases}
 
-    Since the measured data may have an unknown radius `R`, the solution of
-    these equations has to be performed iteratively with one additional
-    external loop in order to update `R`.
+    Since the measured data may have an unknown radius `R`, the solution has to
+    be performed iteratively with one additional external loop in order to
+    update `R`.
 
     Parameters
     ----------
@@ -116,20 +122,19 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         The nominal height of the cylinder.
     R_expected : float, optional
         The nominal radius of the cylinder, used as a first guess to find
-        the best-fit radius (``R_best_fit``). Note that if not specified more
+        the best-fit radius (``R_best_fit``). Note that, if not specified, more
         iterations may be required.
+    best_fit_with_given_radius : bool, optional
+        If ``True``, the value of ``R_expected`` is used to find the best fit
+        outputs.
     save : bool, optional
         Whether to save an ``"output_best_fit.txt"`` in the working directory.
-    errorRtol : float, optional
-        The error tolerance for the best-fit radius to stop the iterations.
-    maxNumIter : int, optional
-        The maximum number of iterations for the best-fit radius.
     sample_size : None or int, optional
         If the input file containing the measured data is too big it may
         be convenient to use only a sample of it in order to calculate the
         best fit.
-    alpha0, beta0, x0, y0 ,z0: float, optional
-        Initial guess for alpha, beta, x0, y0, z0.
+    alpha0, beta0, x0, y0, z0, z1: float, optional
+        Initial guess for alpha, beta, x0, y0, z0, z1.
     clip_box : None or sequence, optional
         Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax].
     loadtxt_kwargs : dict, optional
@@ -150,6 +155,8 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
             Translation in y
         ``out['z0']`` : float
             Translation in z
+        ``out['z1']`` : float
+            Second translation in z, after rotation
         ``out['alpharad']`` : np.ndarray
             `\alpha` angle to rotate input data.
         ``out['betarad']`` : np.ndarray
@@ -185,9 +192,11 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         Rx = calc_Rx(alpharad)
         Ry = calc_Ry(betarad)
         xnew, ynew, znew = (Ry @ Rx).dot(np.vstack((x + x0, y + y0, z + z0)))
+        znew += z1
 
     and the inverse transformation::
 
+        znew -= z1
         x, y, z = (Rx.T @ Ry.T).dot(np.vstack((xnew, ynew, znew))) - np.array([x0, y0, y0])
 
 
@@ -220,82 +229,110 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
         clip_box_mask = np.ones(input_pts.shape[1]).astype(bool)
         input_pts_clip = input_pts.copy()
 
-    i = 0
-    R = R_expected
-    while i <= maxNumIter:
-        i += 1
+    def calc_dist_cylinder(p, input_pts_clip):
+        Rx = calc_Rx(p[0])
+        Ry = calc_Ry(p[1])
+        x0, y0, z0 = p[2:-1]
+        R = p[-1]
+        xn, yn, zn = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
+        dz = np.zeros_like(zn)
+        factor = 1
+        dr = np.sqrt(xn**2 + yn**2) - R
+        dist = np.sqrt(dr*dr)
+        return dist
 
-        def calc_dist(p, input_pts_clip):
-            Rx = calc_Rx(p[0])
-            Ry = calc_Ry(p[1])
-            x0, y0, z0 = p[2:]
-            xn, yn, zn = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
-            dz = np.zeros_like(zn)
-            factor = 1
-            # point below the bottom edge
-            mask = zn < 0
-            dz[mask] = -zn[mask]*factor
+    def calc_dist_cylinder_fixed_R(p, input_pts_clip):
+        Rx = calc_Rx(p[0])
+        Ry = calc_Ry(p[1])
+        x0, y0, z0 = p[2:]
+        xn, yn, zn = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
+        dz = np.zeros_like(zn)
+        factor = 1
+        dr = np.sqrt(xn**2 + yn**2) - R_expected
+        dist = np.sqrt(dr*dr)
+        return dist
 
-            # point inside the cylinder
-            pass
-            #dz[(zn >= 0) & (zn <= H)] *= 0
+    def calc_dist_dz(z1, interm_pts):
+        xn, yn, zn = interm_pts
+        zn = zn + z1
+        dz = np.zeros_like(zn)
+        # point below the bottom edge
+        mask = zn < 0
+        dz[mask] = -zn[mask]
+        # point inside the cylinder
+        pass
+        #dz[(zn >= 0) & (zn <= H)] *= 0
+        # point above the top edge
+        mask = zn > H
+        dz[mask] = (zn[mask] - H)
+        dist = np.sqrt(dz*dz)
+        return dist
 
-            # point above the top edge
-            mask = zn > H
-            dz[mask] = (zn[mask] - H)*factor
+    # initial guess for the optimization variables
+    # the variables are alpha, beta, x0, y0, z0
+    x, y, z = input_pts_clip
+    if x0 is None:
+        x0 = 2*x.mean()
+    if y0 is None:
+        y0 = 2*y.mean()
+    if z0 is None:
+        z0 = 2*z.mean()
+    if z1 is None:
+        z1 = -1
 
-            dr = R - np.sqrt(xn**2 + yn**2)
-            dist = np.sqrt(dr**2 + dz**2)
-            return dist
-
-        # initial guess for the optimization variables
-        # the variables are alpha, beta, x0, y0, z0
-        x, y, z = input_pts_clip
-        if x0 is None:
-            x0 = 2*x.mean()
-        if y0 is None:
-            y0 = 2*y.mean()
-        if z0 is None:
-            z0 = 2*z.mean()
+    # performing the least_squares analysis
+    if best_fit_with_given_radius:
         p = [alpha0, beta0, x0, y0, z0]
-
-        # performing the least_squares analysis
         bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf),
                   (np.pi, np.pi, np.inf, np.inf, np.inf))
-        res = least_squares(fun=calc_dist, x0=p, bounds=bounds,
+        res = least_squares(fun=calc_dist_cylinder_fixed_R, x0=p, bounds=bounds,
                 args=(input_pts_clip,), **ls_kwargs)
         popt = res.x
-        Rx = calc_Rx(popt[0])
-        Ry = calc_Ry(popt[1])
+        alpha = popt[0]
+        beta = popt[1]
+        Rx = calc_Rx(alpha)
+        Ry = calc_Ry(beta)
         x0, y0, z0 = popt[2:]
-        output_pts = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
-        x, y, z = output_pts
-        mask = (z>=0) & (z<=H)
-        R_best_fit = np.sqrt(x[mask]**2 + y[mask]**2).mean()
-        errorR = abs(R_best_fit - R)/R_best_fit
+        R_best_fit = R_expected
 
-        log('Iteration: {0}, R_best_fit: {1}, errorR: {2}'.format(
-            i, R_best_fit, errorR), level=1)
-
-        if errorR < errorRtol:
-            break
-        else:
-            R = R_best_fit
     else:
-        warn('The maximum number of iterations was achieved!')
+        R = R_expected
+        p = [alpha0, beta0, x0, y0, z0, R]
+        bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf, R_min),
+                  (np.pi, np.pi, np.inf, np.inf, np.inf, R_max))
+        res = least_squares(fun=calc_dist_cylinder, x0=p, bounds=bounds,
+                args=(input_pts_clip,), **ls_kwargs)
+        popt = res.x
+        alpha = popt[0]
+        beta = popt[1]
+        Rx = calc_Rx(alpha)
+        Ry = calc_Ry(beta)
+        x0, y0, z0 = popt[2:-1]
+        R_best_fit = popt[-1]
 
-    alpha, beta, x0, y0, z0 = popt
+    interm_pts = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
+    bounds = ([-np.inf], [+np.inf])
+    res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
+            args=(interm_pts, ), **ls_kwargs)
+    z1 = res.x
+    interm_pts[2] += z1
+
+    output_pts = interm_pts
+
     log('Translation:')
     log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0))
     log('')
     log('Rotation angles:')
     log('alpha: {0} rad; beta: {1} rad'.format(alpha, beta))
     log('')
+    log('Second translation:')
+    log('z1: {0}'.format(z1))
+    log('')
     log('Best fit radius: {0}'.format(R_best_fit))
-    log('    errorR: {0}, numiter: {1}'.format(errorR, i))
     log('')
 
     if save:
+        x, y, z = output_pts
         np.savetxt('output_best_fit.txt', np.vstack((x, y, z)).T)
 
     return dict(R_best_fit=R_best_fit,
@@ -304,12 +341,12 @@ def best_fit_cylinder(path, H, R_expected=10., save=True, errorRtol=1.e-9,
                 output_pts=output_pts,
                 alpharad=alpha,
                 betarad=beta,
-                x0=x0, y0=y0, z0=z0)
+                x0=x0, y0=y0, z0=z0, z1=z1)
 
 
 def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         save=True, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
-        y0=None, z0=None, clip_box=None,
+        y0=None, z0=None, z1=None, clip_box=None,
         a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6, loadtxt_kwargs={},
         ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None, method='trf',
             max_nfev=1000000, jac='3-point')):
@@ -503,9 +540,9 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         dist = np.sqrt(dr*dr)
         return dist
 
-    def calc_dist_dz(z_offset, interm_pts):
+    def calc_dist_dz(z1, interm_pts):
         xn, yn, zn = interm_pts
-        zn = zn + z_offset
+        zn = zn + z1
         dz = np.zeros_like(zn)
         # point below the bottom edge
         mask = zn < 0
@@ -528,6 +565,8 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         y0 = y.mean()
     if z0 is None:
         z0 = z.mean()
+    if z1 is None:
+        z1 = -1
 
     # performing the least_squares analysis
     p = [alpha0, beta0, x0, y0, z0]
@@ -556,29 +595,28 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     a_best_fit, b_best_fit = popt[1:]
     interm_pts2 = Rz @ interm_pts1
 
-    z_offset = -1.
     bounds = ([-np.inf], [+np.inf])
-    res = least_squares(fun=calc_dist_dz, x0=z_offset, bounds=bounds,
+    res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts2, ), **ls_kwargs)
-    z_offset = res.x
-    interm_pts2[2] += z_offset
+    z1 = res.x
+    interm_pts2[2] += z1
 
     output_pts = interm_pts2
-    x, y, z = output_pts
 
-    log('Translation:')
+    log('First translation:')
     log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0))
     log('')
     log('Rotation angles:')
     log('alpha: {0} rad; beta: {1} rad; gamma: {2} rad'.format(alpha, beta, gamma))
     log('')
-    log('Longitudinal offset:')
-    log('z_offset: {0}'.format(z_offset))
+    log('Second translation:')
+    log('z1: {0}'.format(z1))
     log('')
     log('Best fit radii: a={0}, b={1}'.format(a_best_fit, b_best_fit))
     log('')
 
     if save:
+        x, y, z = output_pts
         np.savetxt('output_best_fit.txt', np.vstack((x, y, z)).T)
 
     return dict(a_best_fit=a_best_fit,
@@ -589,7 +627,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
                 alpharad=alpha,
                 betarad=beta,
                 gammarad=gamma,
-                x0=x0, y0=y0, z0=z0, z_offset=z_offset)
+                x0=x0, y0=y0, z0=z0, z1=z1)
 
 
 def best_fit_cone(path, H, alphadeg, R_expected=10., save=True,
