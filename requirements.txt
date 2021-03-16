@@ -1,0 +1,7 @@
+numpy
+scipy > 1.5.0
+pytest
+pytest-cov
+coverage
+coveralls
+
