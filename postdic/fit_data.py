@@ -11,8 +11,8 @@ from random import sample
 import os
 
 import numpy as np
-from numpy import sin, cos, pi, deg2rad
-from scipy.sparse.linalg import aslinearoperator, LinearOperator
+from numpy import sin, cos, pi, inf, deg2rad
+from scipy.sparse.linalg import aslinearoperator
 from scipy.optimize import least_squares, lsq_linear
 
 from .logger import *
@@ -284,8 +284,8 @@ def best_fit_cylinder(path, H, R_expected=10.,
     # performing the least_squares analysis
     if best_fit_with_given_radius:
         p = [alpha0, beta0, x0, y0, z0]
-        bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf),
-                  (np.pi, np.pi, np.inf, np.inf, np.inf))
+        bounds = ((-pi, -pi, -inf, -inf, -inf),
+                  (pi, pi, inf, inf, inf))
         res = least_squares(fun=calc_dist_cylinder_fixed_R, x0=p, bounds=bounds,
                 args=(input_pts_clip,), **ls_kwargs)
         popt = res.x
@@ -299,8 +299,8 @@ def best_fit_cylinder(path, H, R_expected=10.,
     else:
         R = R_expected
         p = [alpha0, beta0, x0, y0, z0, R]
-        bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf, R_min),
-                  (np.pi, np.pi, np.inf, np.inf, np.inf, R_max))
+        bounds = ((-pi, -pi, -inf, -inf, -inf, R_min),
+                  (pi, pi, inf, inf, inf, R_max))
         res = least_squares(fun=calc_dist_cylinder, x0=p, bounds=bounds,
                 args=(input_pts_clip,), **ls_kwargs)
         popt = res.x
@@ -312,7 +312,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
         R_best_fit = popt[-1]
 
     interm_pts = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
-    bounds = ([-np.inf], [+np.inf])
+    bounds = ([-inf], [+inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts, ), **ls_kwargs)
     z1 = res.x[0]
@@ -571,8 +571,8 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
 
     # performing the least_squares analysis
     p = [alpha0, beta0, x0, y0, z0]
-    bounds = ((-np.pi, -np.pi, -np.inf, -np.inf, -np.inf),
-              (np.pi, np.pi, np.inf, np.inf, np.inf))
+    bounds = ((-pi, -pi, -inf, -inf, -inf),
+              (pi, pi, inf, inf, inf))
     res = least_squares(fun=calc_dist_cylinder, x0=p, bounds=bounds,
             args=(input_pts_clip,), **ls_kwargs)
     print('least_squares status', res.message)
@@ -585,8 +585,8 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     interm_pts1 = (Ry @ Rx @ (input_pts_clip + np.array([x0, y0, z0])[:, None]))
 
     p = [gamma0, a_expected, b_expected]
-    bounds = ((-np.pi/2, a_min, b_min),
-              (+np.pi/2, a_max, b_max))
+    bounds = ((-pi/2, a_min, b_min),
+              (+pi/2, a_max, b_max))
     res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
             args=(interm_pts1, ), **ls_kwargs)
     print('least_squares status', res.message)
@@ -596,7 +596,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     a_best_fit, b_best_fit = popt[1:]
     interm_pts2 = Rz @ interm_pts1
 
-    bounds = ([-np.inf], [+np.inf])
+    bounds = ([-inf], [+inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts2, ), **ls_kwargs)
     z1 = res.x[0]
@@ -752,7 +752,7 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
 
     if input_pts.shape[1] != 3:
         raise ValueError('Input does not have the format: "theta, z, imp"')
-    if (input_pts[:,0].min() < -2*np.pi or input_pts[:,0].max() > 2*np.pi):
+    if (input_pts[:,0].min() < -2*pi or input_pts[:,0].max() > 2*pi):
         raise ValueError(
                 'In the input: "theta, z, imp"; "theta" must be in radians!')
 
@@ -789,16 +789,6 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
     a = fa(m0, n0, zs, ts, funcnum)
     A = aslinearoperator(a)
     log('Base functions calculated', level=1)
-    #TODO calculate rmatvec
-    #def matvec(x):
-        #return fw0(m0, n0, x, xs_norm=zs, ts=ts, funcnum=funcnum)
-    #def rmatvec(x):
-        #if x.shape == size*m0*n0:
-            #return w0pts
-        #else:
-            #return np.ones(size*m0*n0)
-    #A = LinearOperator((ts.shape[0], size*m0*n0), matvec=matvec,
-            #rmatvec=rmatvec)
     res = lsq_linear(A, w0pts)
     c0 = res.x
     residues = res.fun
