@@ -1,8 +1,8 @@
 r"""
-Read/Write (:mod:`diccyl.read_write`)
+Read/Write (:mod:`postdic.read_write`)
 ==================================================
 
-.. currentmodule::diccyl.read_write
+.. currentmodule::postdic.read_write
 
 This module includes functions to read and write imperfection files.
 
@@ -20,7 +20,7 @@ def read_theta_z_imp(path,
                      H_measured=None,
                      stretch_H=False,
                      z_offset_bot=None,
-                     loadtxtkwargs={},
+                     loadtxt_kwargs={},
                      ):
     r"""Read an imperfection file in the format `\theta`, `z`, imperfection.
 
@@ -52,7 +52,7 @@ def read_theta_z_imp(path,
     z_offset_bot : float, optional
         The offset that should be used from the bottom of the measured points
         to the bottom of the test specimen.
-    loadtxtkwargs : dict, optional
+    loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
 
     Returns
@@ -78,7 +78,7 @@ def read_theta_z_imp(path,
         mps = path
     else:
         log('Reading imperfection file: {0} ...'.format(path))
-        mps = np.loadtxt(path, dtype=FLOAT, **loadtxtkwargs)
+        mps = np.loadtxt(path, dtype=FLOAT, **loadtxt_kwargs)
 
     # measuring model dimensions
     z_min = mps[:, 1].min()
@@ -123,7 +123,7 @@ def read_xyz(path,
              stretch_H=False,
              z_offset_bot=None,
              r_TOL=1.,
-             loadtxtkwargs={},
+             loadtxt_kwargs={},
              ):
     r"""Read an imperfection file in the format `x`, `y`, `z`.
 
@@ -161,7 +161,7 @@ def read_xyz(path,
     r_TOL : float, optional
         The tolerance used to ignore points farer than ``r_TOL*R_best_fit``,
         given in percent.
-    loadtxtkwargs : dict, optional
+    loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
 
     Returns
@@ -186,7 +186,7 @@ def read_xyz(path,
     if isinstance(path, np.ndarray):
         mps = path
     else:
-        mps = np.loadtxt(path, dtype=FLOAT, **loadtxtkwargs)
+        mps = np.loadtxt(path, dtype=FLOAT, **loadtxt_kwargs)
     r = np.sqrt(mps[:, 0]**2 + mps[:, 1]**2)
     # measuring model dimensions
     if R_best_fit is None:
@@ -253,7 +253,7 @@ def xyz2thetazimp(path,
                   save=True,
                   fmt='%1.6f',
                   rotatedeg=None,
-                  loadtxtkwargs={},
+                  loadtxt_kwargs={},
                   ):
     r"""Transforms an imperfection file from the format "`x` `y` `z`"
     to the format "`\theta` `z` `imp`".
@@ -321,7 +321,7 @@ def xyz2thetazimp(path,
     rotatedeg : float or None, optional
         Rotation angle in degrees telling how much the imperfection pattern
         should be rotated about the `X_3` (or `Z`) axis.
-    loadtxtkwargs : dict, optional
+    loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
 
     Returns
@@ -336,7 +336,7 @@ def xyz2thetazimp(path,
 
     """
     if use_best_fit:
-        best_fit_kwargs['loadtxtkwargs'] = loadtxtkwargs
+        best_fit_kwargs['loadtxt_kwargs'] = loadtxt_kwargs
         log('Finding the best-fit ...')
         if alphadeg_measured==0.:
             out = best_fit_cylinder(path, R_expected=R_expected, H=H_measured,
@@ -345,7 +345,7 @@ def xyz2thetazimp(path,
             x0 = out['x0']
             y0 = out['y0']
             z0 = out['z0']
-            input_pts = np.loadtxt(path, unpack=True, **loadtxtkwargs)
+            input_pts = np.loadtxt(path, unpack=True, **loadtxt_kwargs)
             x, y, z = out['T'].dot(input_pts + np.array([x0, y0, z0])[:, None])
             zmin = z.min()
             zmax = z.max()
@@ -360,7 +360,7 @@ def xyz2thetazimp(path,
         log('Reading the data ...')
         d, data, d = read_xyz(path, alphadeg_measured, R_best_fit,
                               H_measured, None, z_offset_bot, r_TOL,
-                              loadtxtkwargs=loadtxtkwargs)
+                              loadtxt_kwargs=loadtxt_kwargs)
         x, y, z = data.T
 
     if clip_bottom or clip_top:
@@ -413,7 +413,7 @@ def xyzthick2thetazthick(path,
                          save=True,
                          fmt='%1.6f',
                          rotatedeg=None,
-                         loadtxtkwargs={},
+                         loadtxt_kwargs={},
                          ):
     r"""Transforms an imperfection file from the format: "`x` `y` `z` `thick`"
     to the format "`\theta` `z` `thick`".
@@ -467,7 +467,7 @@ def xyzthick2thetazthick(path,
     rotatedeg : float or None, optional
         Rotation angle in degrees telling how much the imperfection pattern
         should be rotated about the `X_3` (or `Z`) axis.
-    loadtxtkwargs : dict, optional
+    loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
 
     Returns
@@ -477,7 +477,7 @@ def xyzthick2thetazthick(path,
         and third columns, respectively.
 
     """
-    inputa = np.loadtxt(path, **loadtxtkwargs)
+    inputa = np.loadtxt(path, **loadtxt_kwargs)
     if inputa.shape[1] != 4:
         raise ValueError('Input file does not have the format: "x y z thick"')
 
@@ -493,7 +493,7 @@ def xyzthick2thetazthick(path,
             x0 = out['x0']
             y0 = out['y0']
             z0 = out['z0']
-            input_pts = np.loadtxt(path, unpack=True, **loadtxtkwargs)[:, :3]
+            input_pts = np.loadtxt(path, unpack=True, **loadtxt_kwargs)[:, :3]
             x, y, z = out['T'].dot(input_pts + np.array([x0, y0, z0])[:, None])
             z -= z.min()
             H_points = z.max() - z.min()

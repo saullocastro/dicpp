@@ -1,8 +1,8 @@
 r"""
-Fitting Data (:mod:`dicpostproc.fit_data`)
+Fitting Data (:mod:`postdic.fit_data`)
 ==================================================
 
-.. currentmodule:: dicpostproc.fit_data
+.. currentmodule:: postdic.fit_data
 
 This module includes functions used to fit measured imperfection data.
 
@@ -17,6 +17,7 @@ from scipy.optimize import least_squares, lsq_linear
 
 from .logger import *
 from .constants import FLOAT
+
 
 def calc_Rx(a):
     """Rotation matrix around X for a 3D vector
@@ -176,7 +177,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
     For a given cylinder with expected radius and height of ``R_expected`` and
     ``H``::
 
-        from dicpostproc.fit_data import best_fit_cylinder
+        from postdic.fit_data import best_fit_cylinder
 
         out = best_fit_cylinder(path, H=H, R_expected=R_expected)
         R_best_fit = out['R_best_fit']
@@ -467,7 +468,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     For a given elliptic cylinder with expected radii and height of ``a_expected``,
     ``b_expected`` and ``H``::
 
-        from dicpostproc.fit_data import best_fit_elliptic_cylinder
+        from postdic.fit_data import best_fit_elliptic_cylinder
 
         out = best_fit_elliptic_cylinder(path, H=H, a_expected=a_expected,
         b_expected=b_expected)

@@ -1,8 +1,8 @@
 r"""
-Interpolate (:mod:`diccyl.interpolate`)
+Interpolate (:mod:`postdic.interpolate`)
 ==================================================
 
-.. currentmodule:: diccyl.interpolate
+.. currentmodule:: postdic.interpolate
 
 This module includes some interpolation utilities that will be used in other
 modules.

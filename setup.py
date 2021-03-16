@@ -11,7 +11,7 @@ from Cython.Build import cythonize
 
 
 is_released = False
-version = '0.1.2'
+version = '0.1.0'
 
 
 def git_version():
@@ -46,9 +46,9 @@ def get_version_info(version, is_released):
     return fullversion
 
 
-def write_version_py(version, is_released, filename='diccyl/version.py'):
+def write_version_py(version, is_released, filename='postdic/version.py'):
     fullversion = get_version_info(version, is_released)
-    with open("./diccyl/version.py", "wb") as f:
+    with open("./postdic/version.py", "wb") as f:
         f.write(b'__version__ = "%s"\n' % fullversion.encode())
     return fullversion
 
@@ -67,7 +67,6 @@ def read(fname):
 install_requires = [
         "numpy",
         "scipy",
-        "composites",
         ]
 
 #Trove classifiers
@@ -80,9 +79,9 @@ Intended Audience :: Developers
 Topic :: Scientific/Engineering :: Mathematics
 Topic :: Education
 License :: OSI Approved :: BSD License
-Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
 Programming Language :: Python :: 3.8
+Programming Language :: Python :: 3.9
 Operating System :: Microsoft :: Windows
 Operating System :: Unix
 
@@ -101,9 +100,9 @@ include_dirs = [
             ]
 
 extensions = [
-    Extension('diccyl.fit_data_core',
+    Extension('postdic.fit_data_core',
         sources=[
-            './diccyl/fit_data_core.pyx',
+            './postdic/fit_data_core.pyx',
             ],
         include_dirs=include_dirs,
         extra_compile_args=compile_args,
@@ -123,14 +122,14 @@ data_files = [('', [
         ])]
 
 s = setup(
-    name = "diccyl",
+    name = "postdic",
     version = fullversion,
     author = "Saullo G. P. Castro",
     author_email = "S.G.P.Castro@tudelft.nl",
-    description = ("Digital Image Correlation for Cylinders"),
+    description = ("Post processing routines for Digital Image Correlation (DIC)"),
     license = "2-Clause BSD",
-    keywords = "finite elements shell structural analysis buckling vibration dynamics",
-    url = "https://github.com/saullocastro/diccyl",
+    keywords = "shell; cylindrical; conical; measurement; imperfection; digital image correlation",
+    url = "https://github.com/saullocastro/postdic",
     data_files=data_files,
     long_description=read('README.md'),
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
