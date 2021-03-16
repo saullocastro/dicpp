@@ -47,7 +47,7 @@ def calc_radius_ellipse(a, b, thetarad):
 
 def best_fit_cylinder(path, H, R_expected=10.,
         best_fit_with_given_radius=False,
-        save=True,
+        save=False,
         sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
         y0=None, z0=None, z1=None, clip_box=None,
         R_min=-1e6, R_max=+1e6, loadtxt_kwargs={},
@@ -346,7 +346,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
 
 
 def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
-        save=True, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
+        save=False, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
         y0=None, z0=None, z1=None, clip_box=None,
         a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6, loadtxt_kwargs={},
         ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None, method='trf',
