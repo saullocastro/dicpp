@@ -1,6 +1,8 @@
 name: doc
 
-on: [push]
+on:
+  release:
+    types: [created]
 
 jobs:
   build-and-deploy:
