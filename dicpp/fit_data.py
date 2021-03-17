@@ -9,6 +9,7 @@ This module includes functions used to fit measured imperfection data.
 """
 from random import sample
 import os
+import pickle
 
 import numpy as np
 from numpy import sin, cos, pi, inf, deg2rad
@@ -46,10 +47,10 @@ def calc_radius_ellipse(a, b, thetarad):
 
 def best_fit_cylinder(path, H, R_expected=10.,
         best_fit_with_fixed_radius=False,
-        save=False,
         sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
         y0=None, z0=None, z1=None, clip_box=None,
         R_min=-1e6, R_max=+1e6, loadtxt_kwargs={},
+        verbose=True, output_path=None,
         ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None, method='trf',
             max_nfev=1000000, jac='3-point')):
     r"""Fit a best cylinder for a given set of measured data
@@ -127,8 +128,6 @@ def best_fit_cylinder(path, H, R_expected=10.,
     best_fit_with_fixed_radius : bool, optional
         If ``True``, a constant value given by ``R_expected`` is used to
         calculate the best fit.
-    save : bool, optional
-        Whether to save an ``"output_best_fit.txt"`` in the working directory.
     sample_size : None or int, optional
         If the input file containing the measured data is too big it may
         be convenient to use only a sample of it in order to calculate the
@@ -137,6 +136,10 @@ def best_fit_cylinder(path, H, R_expected=10.,
         Initial guess for alpha, beta, x0, y0, z0, z1.
     clip_box : None or sequence, optional
         Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax].
+    verbose : bool, optional
+        If ``True`` activates log messages.
+    output_path : str or None, optional
+        Save ``out`` to a pickle dump file.
     loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``.
     ls_kwargs : dict, optional
@@ -202,6 +205,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
 
 
     """
+    if verbose: log('Best-fit cylinder for: ' + path)
     if isinstance(path, np.ndarray):
         input_pts = path.T
     else:
@@ -216,6 +220,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
             input_pts = input_pts[:, sample(range(num), int(sample_size))]
 
     if clip_box is not None:
+        log('appying clip_box', level=1)
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
         x, y, z = input_pts
         clip_box_mask = ((clip_box[0] <= x) &
@@ -281,12 +286,14 @@ def best_fit_cylinder(path, H, R_expected=10.,
         z1 = -1
 
     # performing the least_squares optimization
+    if verbose: log('First optimization to find alpha, beta, x0, y0, z0', level=1)
     if best_fit_with_fixed_radius:
         p = [alpha0, beta0, x0, y0, z0]
         bounds = ((-pi, -pi, -inf, -inf, -inf),
                   (pi, pi, inf, inf, inf))
         res = least_squares(fun=calc_dist_cylinder_fixed_R, x0=p, bounds=bounds,
                 args=(input_pts_clip,), **ls_kwargs)
+        if verbose: log('least_squares status: ' + res.message, level=2)
         popt = res.x
         alpha = popt[0]
         beta = popt[1]
@@ -311,31 +318,31 @@ def best_fit_cylinder(path, H, R_expected=10.,
         R_best_fit = popt[-1]
 
     interm_pts = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
+
+    if verbose: log('Second optimization to find z1', level=1)
     bounds = ([-inf], [+inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts, ), **ls_kwargs)
+    if verbose: log('least_squares status: ' + res.message, level=2)
     z1 = res.x[0]
     interm_pts[2] += z1
 
     output_pts = interm_pts
 
-    log('Translation:')
-    log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0))
-    log('')
-    log('Rotation angles:')
-    log('alpha: {0} rad; beta: {1} rad'.format(alpha, beta))
-    log('')
-    log('Second translation:')
-    log('z1: {0}'.format(z1))
-    log('')
-    log('Best fit radius: {0}'.format(R_best_fit))
-    log('')
+    if verbose:
+        log('First translation:', level=1)
+        log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0), level=1)
+        log('', level=1)
+        log('Rotation angles:', level=1)
+        log('alpha: {0} rad; beta: {1} rad'.format(alpha, beta), level=1)
+        log('', level=1)
+        log('Second translation:', level=1)
+        log('z1: {0}'.format(z1), level=1)
+        log('', level=1)
+        log('Best fit radius: {0}'.format(R_best_fit), level=1)
+        log('', level=1)
 
-    if save:
-        x, y, z = output_pts
-        np.savetxt('output_best_fit.txt', np.vstack((x, y, z)).T)
-
-    return dict(R_best_fit=R_best_fit,
+    out = dict(R_best_fit=R_best_fit,
                 input_pts=input_pts,
                 clip_box_mask=clip_box_mask,
                 output_pts=output_pts,
@@ -343,14 +350,20 @@ def best_fit_cylinder(path, H, R_expected=10.,
                 betarad=beta,
                 x0=x0, y0=y0, z0=z0, z1=z1)
 
+    if output_path it not None:
+        with open(output_path, 'wb') as f:
+            pickle.dump(out, f)
+
+    return out
+
 
 def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
-        best_fit_with_fixed_a=False,
-        save=False, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
+        best_fit_with_fixed_a=False, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
         y0=None, z0=None, z1=None, clip_box=None,
-        a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6, loadtxt_kwargs={},
-        ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None, method='trf',
-            max_nfev=1000000, jac='3-point')):
+        a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6,
+        verbose=True, output_path=None,
+        loadtxt_kwargs={}, ls_kwargs=dict(ftol=None, xtol=1e-8, gtol=None,
+            method='trf', max_nfev=1000000, jac='3-point')):
     r"""Fit a best cylinder for a given set of measured data
 
     The coordinate transformation which must be performed in order to adjust
@@ -426,12 +439,14 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     best_fit_with_fixed_a : bool, optional
         If ``True``, a constant value given by ``a_expected`` is used to
         calculate the best fit.
-    save : bool, optional
-        Whether to save an ``"output_best_fit.txt"`` in the working directory.
     alpha0, beta0, gamma0, x0, y0 ,z0, z1: float, optional
         Initial guess for alpha, beta, gamma, x0, y0, z0, z1.
     clip_box : None or sequence, optional
         Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax]
+    verbose : bool, optional
+        If ``True`` activates log messages.
+    output_path : str or None, optional
+        Save ``out`` to a pickle dump file.
     loadtxt_kwargs : dict, optional
         Keyword arguments passed to ``np.loadtxt``
     ls_kwargs : dict, optional
@@ -498,6 +513,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
 
 
     """
+    if verbose: log('Best-fit elliptic cylinder for: ' + path)
     if isinstance(path, np.ndarray):
         input_pts = path.T
     else:
@@ -507,6 +523,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         raise ValueError('Input does not have the format: "x, y, z"')
 
     if clip_box is not None:
+        log('appying clip_box', level=1)
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
         x, y, z = input_pts
         clip_box_mask = ((clip_box[0] <= x) &
@@ -585,12 +602,13 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         z1 = -1
 
     # performing the least_squares optimization
+    if verbose: log('First optimization to find alpha, beta, x0, y0, z0', level=1)
     p = [alpha0, beta0, x0, y0, z0]
     bounds = ((-pi, -pi, -inf, -inf, -inf),
               (pi, pi, inf, inf, inf))
     res = least_squares(fun=calc_dist_cylinder, x0=p, bounds=bounds,
             args=(input_pts_clip,), **ls_kwargs)
-    print('least_squares status', res.message)
+    if verbose: log('least_squares status: ' + res.message, level=2)
     popt = res.x
     alpha = popt[0]
     beta = popt[1]
@@ -599,13 +617,14 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     x0, y0, z0 = popt[2:]
     interm_pts1 = (Ry @ Rx @ (input_pts_clip + np.array([x0, y0, z0])[:, None]))
 
+    if verbose: log('Second optimization to find a, b, gamma', level=1)
     if best_fit_with_fixed_a:
         p = [gamma0, b_expected]
         bounds = ((-pi/2, b_min),
                   (+pi/2, b_max))
         res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
                 args=(interm_pts1, ), **ls_kwargs)
-        print('least_squares status', res.message)
+        if verbose: log('least_squares status: ' + res.message, level=2)
         gamma = res.x[0]
         a_best_fit = a_expected
         b_best_fit = res.x[1]
@@ -616,38 +635,37 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
                   (+pi/2, a_max, b_max))
         res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
                 args=(interm_pts1, ), **ls_kwargs)
-        print('least_squares status', res.message)
+        if verbose: log('least_squares status: ' + res.message, level=2)
         gamma = res.x[0]
         a_best_fit, b_best_fit = res.x[1:]
 
     Rz = calc_Rz(gamma)
     interm_pts2 = Rz @ interm_pts1
 
+    if verbose: log('Third optimization to find z1', level=1)
     bounds = ([-inf], [+inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts2, ), **ls_kwargs)
+    if verbose: log('least_squares status', res.message, level=2)
     z1 = res.x[0]
     interm_pts2[2] += z1
 
     output_pts = interm_pts2
 
-    log('First translation:')
-    log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0))
-    log('')
-    log('Rotation angles:')
-    log('alpha: {0} rad; beta: {1} rad; gamma: {2} rad'.format(alpha, beta, gamma))
-    log('')
-    log('Second translation:')
-    log('z1: {0}'.format(z1))
-    log('')
-    log('Best fit radii: a={0}, b={1}'.format(a_best_fit, b_best_fit))
-    log('')
+    if verbose:
+        log('First translation:', level=1)
+        log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0), level=1)
+        log('', level=1)
+        log('Rotation angles:', level=1)
+        log('alpha: {0} rad; beta: {1} rad; gamma: {2} rad'.format(alpha, beta, gamma), level=1)
+        log('', level=1)
+        log('Second translation:', level=1)
+        log('z1: {0}'.format(z1), level=1)
+        log('', level=1)
+        log('Best fit radii: a={0}, b={1}'.format(a_best_fit, b_best_fit), level=1)
+        log('', level=1)
 
-    if save:
-        x, y, z = output_pts
-        np.savetxt('output_best_fit.txt', np.vstack((x, y, z)).T)
-
-    return dict(a_best_fit=a_best_fit,
+    out = dict(a_best_fit=a_best_fit,
                 b_best_fit=b_best_fit,
                 input_pts=input_pts,
                 clip_box_mask=clip_box_mask,
@@ -656,6 +674,12 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
                 betarad=beta,
                 gammarad=gamma,
                 x0=x0, y0=y0, z0=z0, z1=z1)
+
+    if output_path it not None:
+        with open(output_path, 'wb') as f:
+            pickle.dump(out, f)
+
+    return out
 
 
 def best_fit_cone(path, H, alphadeg, R_expected=10., save=True,
