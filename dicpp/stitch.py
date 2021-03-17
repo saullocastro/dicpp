@@ -21,15 +21,17 @@ from dicpp.interpolate import inv_weighted
 
 def stitch(bf1, bf2,
         pos_deg1, pos_deg2, height_ref,
-        probe_deg, probe_R, probe_zarray,
+        probe_deg, probe_R, probe_zarray, probe_dist_deg=10,
         init_deg_min=-10, init_deg_max=+10, init_deg_step=11,
         init_z_min=-20, init_z_max=+20, init_z_step=11,
         opt_var_z_min=-10., opt_var_z_max=+10., opt_var_deg_min=-10., opt_var_deg_max=+10.,
         ls_kwargs=dict(ftol=None, xtol=1e-4, gtol=None, method='trf',
-            max_nfev=1000000, jac='3-point', diff_step=0.2)):
+            max_nfev=1000, jac='3-point', diff_step=0.2)):
     r"""
     Calculate `\Delta \theta_2` and `\Delta z_2` that stitches the second best fit
     results to the first.
+
+    ``bf2`` must be after ``bf1`` in a positive rotation about ``z``.
 
     Parameters
     ----------
@@ -39,7 +41,7 @@ def stitch(bf1, bf2,
         cylinder of radius``R=out['a_best_fit']``.
     pos_deg1, pos_deg_2 : float
         Nominal circumferential position in degrees of the adjacent best fit
-        results.
+        results. ``pos_deg1`` must be such that the `x` axis becomes normal to ``bf1``.
     height_ref : float
         Reference height.
     probe_deg : float
@@ -48,6 +50,9 @@ def stitch(bf1, bf2,
         Radial position of the probing line.
     probe_zarray: array-like
         Array with the z positions of the probing line.
+    probe_dist_deg : float, optional
+        Angular distance in degrees from the probing line. Points beyond this
+        distance are trimmed out.
     init_deg_min, init_deg_max, init_z_min, init_z_max : float, optional
         Interval to search for the best initial point for the stitching
         optimization.
@@ -58,8 +63,6 @@ def stitch(bf1, bf2,
         Variation from initial point to be used in the stitching optimization.
     ls_kwargs : dict, optional
         Keyword arguments passed to ``scipy.optimize.least_squares``.
-    diff_step_deg : float, optional
-        Step size used in the finite difference to compute gradients.
 
     Returns
     -------
@@ -80,18 +83,18 @@ def stitch(bf1, bf2,
             line.
 
     """
-    def get_xyz_imp(p, bf, pos_deg):
+    def get_xyz_imp(p, bf, pos_deg, pos1=True):
         delta_deg = p[0]
         delta_z = p[1]
         delta_rad = deg2rad(delta_deg)
         Rx = calc_Rx(bf['alpharad'])
         Ry = calc_Ry(bf['betarad'])
-        Rz = calc_Rz(bf['gammarad'])
+        Rz = calc_Rz(bf.get('gammarad', 0)) # gammarad=0 for best-fit cylinder
         x0 = bf['x0']
         y0 = bf['y0']
         z0 = bf['z0']
         z1 = bf['z1']
-        xyz = bf['input_pts'].T
+        xyz = bf['input_pts'].T.copy()
         xyz[:, 0] += x0
         xyz[:, 1] += y0
         xyz[:, 2] += z0
@@ -113,15 +116,24 @@ def stitch(bf1, bf2,
             xyz[:, 0] = rcnew*np.cos(theta)
             xyz[:, 1] = rcnew*np.sin(theta)
         else:
-            deltar = (xyz[:, 0]**2 + xyz[:, 1]**2)**0.5 - bf['R_best_fit']
-        #NOTE rotating face to nominal circumferential position
-        Rz = calc_Rz(deg2rad(pos_deg))
-        xyz = (Rz @ xyz.T).T
+            R = bf['R_best_fit']
+            deltar = (xyz[:, 0]**2 + xyz[:, 1]**2)**0.5 - R
         #NOTE applying \Delta z
         xyz[:, 2] += delta_z
         #NOTE applying \Delta \Theta
         Rz = calc_Rz(delta_rad)
         xyz = (Rz @ xyz.T).T
+        #NOTE rotating face to nominal circumferential position
+        Rz = calc_Rz(deg2rad(pos_deg))
+        xyz = (Rz @ xyz.T).T
+        #trimming
+        ang1, ang2 = deg2rad([probe_deg-probe_dist_deg,
+            probe_deg+probe_dist_deg])
+        theta = np.arctan2(xyz[:, 1], xyz[:, 0])
+        valid = (theta >= ang1) & (theta <= ang2)
+        theta = theta[valid]
+        xyz = xyz[valid]
+        deltar = deltar[valid]
         return xyz, deltar
 
     def dr_at_probing_line(xyz, dr):
@@ -132,11 +144,11 @@ def stitch(bf1, bf2,
         dist, out = inv_weighted(dr, xyz, xyz_mesh, ncp=10, power_parameter=1.7)
         return out
 
-    xyz1, deltar1 = get_xyz_imp([0, 0], bf1, pos_deg=pos_deg1)
+    xyz1, deltar1 = get_xyz_imp([0, 0], bf1, pos_deg=pos_deg1, pos1=True)
     dr1 = dr_at_probing_line(xyz1, deltar1)
 
     def fun(p):
-        xyz2, deltar2 = get_xyz_imp(p, bf2, pos_deg=pos_deg2)
+        xyz2, deltar2 = get_xyz_imp(p, bf2, pos_deg=pos_deg2, pos1=False)
         dr2 = dr_at_probing_line(xyz2, deltar2)
         return (dr1 - dr2)**2
 
@@ -156,7 +168,7 @@ def stitch(bf1, bf2,
               [opt_var_z_max+zinit, opt_var_deg_max+anginit]]
     res = least_squares(fun, x0=[zinit, anginit], bounds=bounds, **ls_kwargs)
     assert res.success
-    xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg2)
+    xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg2, pos1=False)
     dr2 = dr_at_probing_line(xyz2, deltar1)
 
     out = dict(delta_deg=res.x[1], delta_z=res.x[0], dr1=dr1, dr2=dr2)

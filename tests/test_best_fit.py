@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 import os
 from io import BytesIO
 from zipfile import ZipFile
