@@ -12,8 +12,6 @@ from dicpp.fit_data import best_fit_cylinder
 from dicpp.fit_data import calc_Rx, calc_Ry, calc_Rz
 from dicpp.stitch import stitch
 
-file_url = r'https://zenodo.org/record/4608398/files/S1-1-measurement-1.zip?download=1'
-
 def extract_file_urlzip(file_url, file_name):
     url = requests.get(file_url)
     zipfile = ZipFile(BytesIO(url.content))
@@ -24,7 +22,9 @@ def extract_file_urlzip(file_url, file_name):
             success = True
     assert success
 
-if True:#def test_stitch():
+def test_stitch(plot=False):
+    file_url = r'https://zenodo.org/record/4608398/files/S1-1-measurement-1.zip?download=1'
+
     Href = 300
     H = Href - 2*(25) #TODO check this 30
     R = 136/2
@@ -65,7 +65,7 @@ if True:#def test_stitch():
     line_len = 1000
     Hcut = 50
     probe_zarray = np.linspace(Hcut, Hcut+(Href-2*Hcut), line_len, endpoint=True)
-    out = stitch(bf2, bf1,
+    out = stitch(bf1, bf2,
         pos_deg1=+90,
         pos_deg2=+90+60,
         height_ref=Href,
@@ -75,7 +75,6 @@ if True:#def test_stitch():
         opt_var_z_min=-10., opt_var_z_max=+10., opt_var_deg_min=-5.,
         opt_var_deg_max=+5.)
 
-    plot = True
     if plot:
         import pyvista as pv
         from pyvista import colors
@@ -114,8 +113,8 @@ if True:#def test_stitch():
         xyz[:, 1] += y0
         xyz[:, 2] += z0
         xyz = ((Ry @ Rx) @ xyz.T).T
-        xyz[:, 2] += z1
-        Rz = calc_Rz(np.deg2rad(90 + 60))
+        xyz[:, 2] += z1 + out['delta_z']
+        Rz = calc_Rz(np.deg2rad(90 + 60 + out['delta_deg']))
         xyz = (Rz @ xyz.T).T
         points = pv.PolyData(xyz)
         plotter.add_mesh(points, render_points_as_spheres=True,
@@ -123,12 +122,16 @@ if True:#def test_stitch():
 
         points = pv.PolyData(xyz)
         plotter.add_mesh(points, render_points_as_spheres=True,
-                color=colors.hexcolors['blue'], smooth_shading=True, point_size=6.)
+                color=colors.hexcolors['lightblue'], smooth_shading=True, point_size=6.)
         xaxis = pv.Arrow(start=(0, 0, 0), direction=(1, 0, 0), scale=70)
         plotter.add_mesh(xaxis, color='black')
         yaxis = pv.Arrow(start=(0, 0, 0), direction=(0, 1, 0), scale=70)
         plotter.add_mesh(yaxis, color='black')
         zaxis = pv.Arrow(start=(0, 0, 0), direction=(0, 0, 1), scale=70)
         plotter.add_mesh(zaxis, color='black')
+        plotter.set_background('white')
         plotter.show()
 
+
+if __name__ == '__main__':
+    test_stitch(plot=True)
