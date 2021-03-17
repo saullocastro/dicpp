@@ -5,7 +5,7 @@ import requests
 
 import numpy as np
 
-from postdic.fit_data import best_fit_cylinder, best_fit_elliptic_cylinder
+from dicpp.fit_data import best_fit_cylinder, best_fit_elliptic_cylinder
 
 file_url = r'https://zenodo.org/record/4608398/files/S1-1-measurement-1.zip?download=1'
 

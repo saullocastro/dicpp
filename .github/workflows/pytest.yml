@@ -34,4 +34,10 @@ jobs:
         flake8 ./dicpp --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest ./tests
+        pytest --cov=./tests
+    - name: "Upload coverage to Codecov"
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_UPLOAD_TOKEN }} 
+        fail_ci_if_error: true
+        verbose: true
