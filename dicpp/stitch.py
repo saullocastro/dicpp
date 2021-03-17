@@ -69,10 +69,10 @@ def stitch(bf1, bf2,
     out : dict
         A Python dictionary with the entries:
 
-        ``out['delta_deg2']`` : float
+        ``out['delta_deg']`` : float
             The `\Delta \theta_2` offset that stitches the second best-fit
             result to the first.
-        ``out['delta_z2']`` : float
+        ``out['delta_z']`` : float
             The `\Delta z_2` offset that stitches the second best-fit result to
             the first.
         ``out['dr1']`` : array-like
@@ -84,9 +84,8 @@ def stitch(bf1, bf2,
 
     """
     def get_xyz_imp(p, bf, pos_deg, pos1=True):
-        delta_deg = p[0]
-        delta_z = p[1]
-        delta_rad = deg2rad(delta_deg)
+        delta_z = p[0]
+        delta_deg = p[1]
         Rx = calc_Rx(bf['alpharad'])
         Ry = calc_Ry(bf['betarad'])
         Rz = calc_Rz(bf.get('gammarad', 0)) # gammarad=0 for best-fit cylinder
@@ -121,7 +120,7 @@ def stitch(bf1, bf2,
         #NOTE applying \Delta z
         xyz[:, 2] += delta_z
         #NOTE applying \Delta \Theta
-        Rz = calc_Rz(delta_rad)
+        Rz = calc_Rz(deg2rad(delta_deg))
         xyz = (Rz @ xyz.T).T
         #NOTE rotating face to nominal circumferential position
         Rz = calc_Rz(deg2rad(pos_deg))
@@ -171,19 +170,6 @@ def stitch(bf1, bf2,
     xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg2, pos1=False)
     dr2 = dr_at_probing_line(xyz2, deltar1)
 
-    out = dict(delta_deg=res.x[1], delta_z=res.x[0], dr1=dr1, dr2=dr2)
+    out = dict(delta_z=res.x[0], delta_deg=res.x[1], dr1=dr1, dr2=dr2)
 
     return out
-
-    #plot_lines = False
-    #if plot_lines:
-        #import matplotlib
-        #matplotlib.use('TkAgg')
-        #import matplotlib.pyplot as plt
-        #plt.clf()
-        #plt.plot(probe_zarray, dr1, 'k')
-        #xyz2, dr2 = get_xyz_imp(opt[-1], bf2, deg2rad([-45, +45]), angles[j])
-        #dr2 = dr_at_probing_line(xyz2, dr2)
-        #plt.plot(probe_zarray, dr2)
-        #plt.savefig(fname=cyl_mea + '-' + str(i) + '-' + str(j) + '.png',
-                #bbox_inches='tight')
