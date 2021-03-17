@@ -1,3 +1,12 @@
+r"""
+Fitting Data (:mod:`dicpp.stitch`)
+==================================================
+
+.. currentmodule:: dicpp.stitch
+
+Functions to stitch best-fit imperfection data.
+
+"""
 
 import sys
 import pickle
@@ -145,7 +154,7 @@ def stitch(bf1, bf2,
     # stitching optimization
     bounds = [[opt_var_z_min+zinit, opt_var_deg_min+anginit],
               [opt_var_z_max+zinit, opt_var_deg_max+anginit]]
-    res = least_squares(fun, x0=[zinit, anginit], bounds=bounds, kwargs=**ls_kwargs)
+    res = least_squares(fun, x0=[zinit, anginit], bounds=bounds, **ls_kwargs)
     assert res.success
     xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg_2)
     dr2 = dr_at_probing_line(xyz2, deltar1)

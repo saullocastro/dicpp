@@ -81,7 +81,7 @@ def inv_weighted(values, source, destiny, ncp=5, power_parameter=2):
 
 def interp_theta_z_imp(data, destiny, alphadeg, H_measured, H_model, R_bottom,
         stretch_H=False, z_offset_bot=None, rotatedeg=0., ncp=5,
-        power_parameter=2, ignore_bot_h=None, ignore_top_h=None, T=None):
+        power_parameter=2, ignore_bot_h=None, ignore_top_h=None):
     r"""Interpolates a data set in the `\theta, z, imp` format
 
     This function uses the inverse-weighted algorithm (:func:`.inv_weighted`).
@@ -128,9 +128,6 @@ def interp_theta_z_imp(data, destiny, alphadeg, H_measured, H_model, R_bottom,
     ignore_top_h : None or float, optional
         Nodes close to the top edge are ignored according to this meridional
         distance.
-    T : None or np.ndarray, optional
-        A transformation matrix (cf. :func:`.transf_matrix`) required when the
-        mesh is not in the :ref:`default coordinate system <figure_conecyl>`.
 
     Returns
     -------
@@ -168,10 +165,6 @@ def interp_theta_z_imp(data, destiny, alphadeg, H_measured, H_model, R_bottom,
     data3D[:, 2] = z
     data3D[:, 3] = data[:, 2]
 
-    if T is not None:
-        tmp = np.vstack((destiny.T, np.ones((1, destiny.shape[0]))))
-        destiny = np.dot(T, tmp).T
-        del tmp
     ans = inv_weighted(data3D, destiny, ncp=ncp, power_parameter=power_parameter)
 
     z_mesh = destiny[:, 2]

@@ -4,7 +4,7 @@ Fitting Data (:mod:`dicpp.fit_data`)
 
 .. currentmodule:: dicpp.fit_data
 
-This module includes functions used to fit measured imperfection data.
+Functions to create best-fit imperfection data.
 
 """
 from random import sample
@@ -58,56 +58,68 @@ def best_fit_cylinder(path, H, R_expected=10.,
     The coordinate transformation which must be performed in order to adjust
     the raw data to the finite element coordinate system is illustrated below:
 
-    .. figure:: ../../../figures/modules/conecylDB/fit_data/coord_sys_trans.png
+    .. figure:: ../figures/best_fit_cylinder.jpg
         :width: 400
 
     This transformation can be represented in matrix form as:
 
     .. math::
 
-     {x, y, z}.T = [Ry][Rx]{x+x0, y+y0, z+z0}.T
-     z += z1
+        \left\{\begin{matrix}
+        x_c\\y_c\\z_c
+        \end{matrix}\right\} = [R_z][R_y][R_x]
+        \left\{\begin{matrix}
+        x_i + x_0\\
+        y_i + y_0\\
+        z_i + z_0
+        \end{matrix}\right\}
+        +
+        \left\{\begin{matrix}
+        0\\
+        0\\
+        z_1
+        \end{matrix}\right\}
 
-    Note that there are **six** unknown variables:
-
-    - the three components of the translation `\Delta x_0`, `\Delta y_0` and
-      `\Delta z_0`
-    - the rotation angles `\alpha` and `\beta`, respectively in this order
-    - the final axial translation `\Delta z_1`
-
-    The six unknowns are calculated iteratively in a non-linear least-squares
-    problem (solved with ``scipy.optimize.least_squares``), where the measured data
-    is transformed to the reference coordinate system and then compared with
-    a reference cylinder in order to compute the residual error using:
+    with:
 
     .. math::
-        \begin{Bmatrix} x_{ref} \\ y_{ref} \\ z_{ref} \end{Bmatrix} =
-        [T]
-        \begin{Bmatrix} x_m \\ y_m \\ z_m \\ 1 \end{Bmatrix}
-        \\
-        z_{ref} += z_1 \\
-        Error = \sqrt{(\Delta r)^2 + (\Delta z)^2}
 
-    where:
+        [R_x]=\begin{bmatrix}
+        1 &   0   &   0 \\
+        0 & \cos{\alpha} & -\sin{\alpha} \\
+        0 & \sin{\alpha} &  \cos{\alpha}
+        \end{bmatrix}
 
-    - `x_m`, `y_m` and `z_m` are the data coordinates in the raw data coordinate
-      system
-    - `x_{ref}` `x_{ref}` are the data coordinates in the :ref:`reference
-      coordinate system <figure_conecyl>`
-    - `\Delta r` and `\Delta z` are defined as:
+    .. math::
 
-        .. math::
-            \Delta r = R - \sqrt{x_{ref}^2 + y_{ref}^2}
-            \\
-            \Delta z = \begin{cases}
-                            -z_{ref}, & \text{if } z_{ref} < 0 \\
-                                   0, & \text{if } 0 <= z_{ref} <= H \\
-                         z_{ref} - H, & \text{if } z_{ref} > H \\
-                       \end{cases}
+        [R_y]=\begin{bmatrix}
+        \cos{\beta} &  0 & \sin{\beta} \\
+        0 & 1 & 0 \\
+        -\sin{\beta} & 0 & \cos{\beta}
+        \end{bmatrix}
 
-    Since the measured data may have an unknown radius `R`, the solution has to
-    be performed iteratively with one additional external loop in order to
-    update `R`.
+    .. math::
+
+        [R_z]=\begin{bmatrix}
+        cos{\gamma} & -sin{\gamma} &  0 \\
+        sin{\gamma} &   cos{\gamma} &  0 \\
+         0 & 0 & 1
+        \end{bmatrix}
+
+    For the best-fit cylinder one can assume `\gamma=0`, such that there are
+    **six** unknown variables:
+
+    - the three components of the first translation `\Delta x_0`, `\Delta y_0` and `\Delta z_0`
+    - the rotation angles `\alpha` and `\beta`
+    - the second axial translation `\Delta z_1`
+
+    The six unknowns are found in a non-linear least-squares optimization
+    problem (solved with ``scipy.optimize.least_squares``), where the measured data
+    is transformed to the reference coordinate system and then compared with
+    a reference cylinder in order to compute the residual error.
+
+    Since the measured data may have an unknown radius `R`, the solution also
+    involves finding this radius.
 
     Parameters
     ----------
@@ -350,7 +362,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
                 betarad=beta,
                 x0=x0, y0=y0, z0=z0, z1=z1)
 
-    if output_path it not None:
+    if output_path is not None:
         with open(output_path, 'wb') as f:
             pickle.dump(out, f)
 
@@ -369,52 +381,67 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     The coordinate transformation which must be performed in order to adjust
     the raw data to the finite element coordinate system is illustrated below:
 
-    .. figure:: ../../../figures/modules/conecylDB/fit_data/coord_sys_trans.png
+    .. figure:: ../figures/best_fit_cylinder.jpg
         :width: 400
 
     This transformation can be represented in matrix form as:
 
     .. math::
 
-     {x, y, z}.T = [Rz][Ry][Rx]{x+x0, y+y0, z+z0}.T
+        \left\{\begin{matrix}
+        x_c\\y_c\\z_c
+        \end{matrix}\right\} = [R_z][R_y][R_x]
+        \left\{\begin{matrix}
+        x_i + x_0\\
+        y_i + y_0\\
+        z_i + z_0
+        \end{matrix}\right\}
+        +
+        \left\{\begin{matrix}
+        0\\
+        0\\
+        z_1
+        \end{matrix}\right\}
 
-    Note that **five** variables are unknowns:
-
-    - the three components of the translation `\Delta x_0`, `\Delta y_0` and `\Delta z_0`
-    - the rotation angles `\alpha`, `\beta` and `\gamma`; respectively in this order
-
-    The five unknowns are calculated iteratively in a non-linear least-squares
-    problem (solved with ``scipy.optimize.least_squares``), where the measured data
-    is transformed to the reference coordinate system and there compared with
-    a reference cylinder in order to compute the residual error using:
+    with:
 
     .. math::
-        \begin{Bmatrix} x_{ref} \\ y_{ref} \\ z_{ref} \end{Bmatrix} =
-        [T]
-        \begin{Bmatrix} x_m \\ y_m \\ z_m \\ 1 \end{Bmatrix}
-        \\
-        Error = \sqrt{(\Delta r)^2 + (\Delta z)^2}
 
-    where:
+        [R_x]=\begin{bmatrix}
+        1 &   0   &   0 \\
+        0 & \cos{\alpha} & -\sin{\alpha} \\
+        0 & \sin{\alpha} &  \cos{\alpha}
+        \end{bmatrix}
 
-    - `x_m`, `y_m` and `z_m` are the data coordinates in the data coordinate
-      system
-    - `x_{ref}` `x_{ref}` are the data coordinates in the :ref:`reference
-      coordinate system <figure_conecyl>`
-    - `\Delta r` and `\Delta z` are defined as:
+    .. math::
 
-        .. math::
-            \Delta r = R - \sqrt{x_{ref}^2 + y_{ref}^2}
-            \\
-            \Delta z = \begin{cases}
-                            -z_{ref}, & \text{if } z_{ref} < 0 \\
-                                   0, & \text{if } 0 <= z_{ref} <= H \\
-                         z_{ref} - H, & \text{if } z_{ref} > H \\
-                       \end{cases}
+        [R_y]=\begin{bmatrix}
+        \cos{\beta} &  0 & \sin{\beta} \\
+        0 & 1 & 0 \\
+        -\sin{\beta} & 0 & \cos{\beta}
+        \end{bmatrix}
 
-    Since the measured data may have an unknown radius `R`, the solution of
-    these equations has to be performed iteratively with one additional
-    external loop in order to update `R`.
+    .. math::
+
+        [R_z]=\begin{bmatrix}
+        cos{\gamma} & -sin{\gamma} &  0 \\
+        sin{\gamma} &   cos{\gamma} &  0 \\
+         0 & 0 & 1
+        \end{bmatrix}
+
+    There are **seven** unknown variables:
+
+    - the three components of the first translation `\Delta x_0`, `\Delta y_0` and `\Delta z_0`
+    - the rotation angles `\alpha`,  `\beta` and `\gamma`
+    - the second axial translation `\Delta z_1`
+
+    The six unknowns are found in a non-linear least-squares optimization
+    problem (solved with ``scipy.optimize.least_squares``), where the measured data
+    is transformed to the reference coordinate system and then compared with
+    a reference cylinder in order to compute the residual error.
+
+    Since the measured data may have an unknown minor and major radii `a,b`, the solution also
+    involves finding these radii.
 
     Parameters
     ----------
@@ -675,21 +702,21 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
                 gammarad=gamma,
                 x0=x0, y0=y0, z0=z0, z1=z1)
 
-    if output_path it not None:
+    if output_path is not None:
         with open(output_path, 'wb') as f:
             pickle.dump(out, f)
 
     return out
 
 
-def best_fit_cone(path, H, alphadeg, R_expected=10., save=True,
-        errorRtol=1.e-9, maxNumIter=1000, sample_size=None):
-    r"""Fit a best cone for a given set of measured data
-
-    .. note:: NOT IMPLEMENTED YET
-
-    """
-    raise NotImplementedError('Function not implemented yet!')
+#def best_fit_cone(path, H, alphadeg, R_expected=10., save=True,
+        #errorRtol=1.e-9, maxNumIter=1000, sample_size=None):
+    #r"""Fit a best cone for a given set of measured data
+#
+    #.. note:: NOT IMPLEMENTED YET
+#
+    #"""
+    #raise NotImplementedError('Function not implemented yet!')
 
 
 def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,

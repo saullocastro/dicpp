@@ -13,5 +13,8 @@ Post processing tools for DIC data of cylindrical shells.
 .. automodule:: dicpp.interpolate
     :members:
 
+.. automodule:: dicpp.stitch
+    :members:
+
 """
 pass
