@@ -21,7 +21,7 @@ from dicpp.interpolate import inv_weighted
 
 def stitch(bf1, bf2,
         pos_deg1, pos_deg2, height_ref,
-        probe_deg, probe_zarray,
+        probe_deg, probe_R, probe_zarray,
         init_deg_min=-10, init_deg_max=+10, init_deg_step=11,
         init_z_min=-20, init_z_max=+20, init_z_step=11,
         opt_var_z_min=-10., opt_var_z_max=+10., opt_var_deg_min=-10., opt_var_deg_max=+10.,

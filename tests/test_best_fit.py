@@ -40,14 +40,14 @@ def test_best_fit():
             ls_kwargs=dict(ftol=None, xtol=1e-6, gtol=None, method='trf',
             max_nfev=1000, jac='3-point', tr_solver='exact'))
     ans = best_fit_cylinder(name, H, R_expected=R,
-            save=False, clip_box=clip_box, x0=x,
+            output_path='bf.pickle', clip_box=clip_box, x0=x,
             y0=y, z0=z, alpha0=np.pi/2, beta0=-0.01,
             loadtxt_kwargs=dict(delimiter=',', usecols=(2, 3, 4), skiprows=1),
             **kwargs)
     assert np.isclose(ans['z1'], -344.9784240010439)
     ans = best_fit_cylinder(name, H, R_expected=R,
             best_fit_with_fixed_radius=True,
-            save=False, clip_box=clip_box, x0=x,
+            output_path='bf.pickle', clip_box=clip_box, x0=x,
             y0=y, z0=z, alpha0=np.pi/2, beta0=-0.01,
             loadtxt_kwargs=dict(delimiter=',', usecols=(2, 3, 4), skiprows=1),
             **kwargs)
@@ -57,13 +57,13 @@ def test_best_fit():
             ls_kwargs=dict(ftol=None, xtol=1e-6, gtol=None, method='trf',
             max_nfev=1000, jac='3-point', tr_solver='exact'))
     ans = best_fit_elliptic_cylinder(name, H, a_expected=R,
-            b_expected=R, save=False, clip_box=clip_box, x0=x,
+            b_expected=R, output_path='bf.pickle', clip_box=clip_box, x0=x,
             y0=y, z0=z, alpha0=np.pi/2, beta0=-0.01,
             gamma0=-0.01, loadtxt_kwargs=dict(delimiter=',',
                     usecols=(2, 3, 4), skiprows=1), **kwargs)
     assert np.isclose(ans['z1'], -379.67854023453316)
     ans = best_fit_elliptic_cylinder(name, H, a_expected=R, b_expected=R,
-            best_fit_with_fixed_a=True, save=False, clip_box=clip_box, x0=x,
+            best_fit_with_fixed_a=True, output_path='bf.pickle', clip_box=clip_box, x0=x,
             y0=y, z0=z, alpha0=np.pi/2, beta0=-0.01, gamma0=-0.01,
             loadtxt_kwargs=dict(delimiter=',', usecols=(2, 3, 4), skiprows=1),
             **kwargs)
