@@ -1,0 +1,847 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Image Correlation Post Processing dicpp module &#8212; dicpp 0.1.0.dev0+62581a4 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">dicpp 0.1.0.dev0+62581a4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Digital Image Correlation Post Processing <span class="math">dicpp</span> module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dicpp">
+<span id="digital-image-correlation-post-processing-dicpp-module"></span><h1>Digital Image Correlation Post Processing <span class="math">dicpp</span> module<a class="headerlink" href="#module-dicpp" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="digital-image-correlation-dicpp">
+<h2>Digital Image Correlation (<a class="reference internal" href="#module-dicpp" title="dicpp"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp</span></code></a>)<a class="headerlink" href="#digital-image-correlation-dicpp" title="Permalink to this headline">¶</a></h2>
+<p>Post processing tools for DIC data of cylindrical shells.</p>
+<span class="target" id="module-dicpp.fit_data"></span><div class="section" id="fitting-data-dicpp-fit-data">
+<h3>Fitting Data (<a class="reference internal" href="#module-dicpp.fit_data" title="dicpp.fit_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp.fit_data</span></code></a>)<a class="headerlink" href="#fitting-data-dicpp-fit-data" title="Permalink to this headline">¶</a></h3>
+<p>Functions to create best-fit imperfection data.</p>
+<dl class="py function">
+<dt id="dicpp.fit_data.best_fit_cylinder">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">best_fit_cylinder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_expected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_fit_with_fixed_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadtxt_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'ftol':</span> <span class="pre">None,</span> <span class="pre">'gtol':</span> <span class="pre">None,</span> <span class="pre">'jac':</span> <span class="pre">'3-point',</span> <span class="pre">'max_nfev':</span> <span class="pre">1000000,</span> <span class="pre">'method':</span> <span class="pre">'trf',</span> <span class="pre">'xtol':</span> <span class="pre">1e-08}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.best_fit_cylinder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a best cylinder for a given set of measured data</p>
+<p>The coordinate transformation which must be performed in order to adjust
+the raw data to the finite element coordinate system is illustrated below:</p>
+<div class="figure align-default">
+<a class="reference internal image-reference" href="_images/best_fit_cylinder.jpg"><img alt="_images/best_fit_cylinder.jpg" src="_images/best_fit_cylinder.jpg" style="width: 400px;" /></a>
+</div>
+<p>This transformation can be represented in matrix form as:</p>
+<div class="math">
+<p><span class="math">\left\{\begin{matrix}
+x_c\\y_c\\z_c
+\end{matrix}\right\} = [R_z][R_y][R_x]
+\left\{\begin{matrix}
+x_i + x_0\\
+y_i + y_0\\
+z_i + z_0
+\end{matrix}\right\}
++
+\left\{\begin{matrix}
+0\\
+0\\
+z_1
+\end{matrix}\right\}</span></p>
+</div><p>with:</p>
+<div class="math">
+<p><span class="math">[R_x]=\begin{bmatrix}
+1 &amp;   0   &amp;   0 \\
+0 &amp; \cos{\alpha} &amp; -\sin{\alpha} \\
+0 &amp; \sin{\alpha} &amp;  \cos{\alpha}
+\end{bmatrix}</span></p>
+</div><div class="math">
+<p><span class="math">[R_y]=\begin{bmatrix}
+\cos{\beta} &amp;  0 &amp; \sin{\beta} \\
+0 &amp; 1 &amp; 0 \\
+-\sin{\beta} &amp; 0 &amp; \cos{\beta}
+\end{bmatrix}</span></p>
+</div><div class="math">
+<p><span class="math">[R_z]=\begin{bmatrix}
+cos{\gamma} &amp; -sin{\gamma} &amp;  0 \\
+sin{\gamma} &amp;   cos{\gamma} &amp;  0 \\
+ 0 &amp; 0 &amp; 1
+\end{bmatrix}</span></p>
+</div><p>For the best-fit cylinder one can assume <span class="math">\gamma=0</span>, such that there are
+<strong>six</strong> unknown variables:</p>
+<ul class="simple">
+<li><p>the three components of the first translation <span class="math">\Delta x_0</span>, <span class="math">\Delta y_0</span> and <span class="math">\Delta z_0</span></p></li>
+<li><p>the rotation angles <span class="math">\alpha</span> and <span class="math">\beta</span></p></li>
+<li><p>the second axial translation <span class="math">\Delta z_1</span></p></li>
+</ul>
+<p>The six unknowns are found in a non-linear least-squares optimization
+problem (solved with <code class="docutils literal notranslate"><span class="pre">scipy.optimize.least_squares</span></code>), where the measured data
+is transformed to the reference coordinate system and then compared with
+a reference cylinder in order to compute the residual error.</p>
+<p>Since the measured data may have an unknown radius <span class="math">R</span>, the solution also
+involves finding this radius.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>path</strong><span class="classifier">str or np.ndarray</span></dt><dd><p>The path of the file containing the data. Can be a full path using
+<code class="docutils literal notranslate"><span class="pre">r&quot;C:\Temp\inputfile.txt&quot;</span></code>, for example.
+The input file must have 3 columns “<span class="math">x</span> <span class="math">y</span> <span class="math">z</span>” expressed
+in Cartesian coordinates.</p>
+<p>This input can also be a <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> object, with <span class="math">x</span>, <span class="math">y</span>, <span class="math">z</span>
+in each corresponding column.</p>
+</dd>
+<dt><strong>H</strong><span class="classifier">float</span></dt><dd><p>The nominal height of the cylinder.</p>
+</dd>
+<dt><strong>R_expected</strong><span class="classifier">float, optional</span></dt><dd><p>The nominal radius of the cylinder, used as a first guess to find
+the best-fit radius (<code class="docutils literal notranslate"><span class="pre">R_best_fit</span></code>). Note that, if not specified, more
+iterations may be required.</p>
+</dd>
+<dt><strong>best_fit_with_fixed_radius</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, a constant value given by <code class="docutils literal notranslate"><span class="pre">R_expected</span></code> is used to
+calculate the best fit.</p>
+</dd>
+<dt><strong>sample_size</strong><span class="classifier">None or int, optional</span></dt><dd><p>If the input file containing the measured data is too big it may
+be convenient to use only a sample of it in order to calculate the
+best fit.</p>
+</dd>
+<dt><strong>alpha0, beta0, x0, y0, z0, z1: float, optional</strong></dt><dd><p>Initial guess for alpha, beta, x0, y0, z0, z1.</p>
+</dd>
+<dt><strong>clip_box</strong><span class="classifier">None or sequence, optional</span></dt><dd><p>Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax].</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code> activates log messages.</p>
+</dd>
+<dt><strong>output_path</strong><span class="classifier">str or None, optional</span></dt><dd><p>Save <code class="docutils literal notranslate"><span class="pre">out</span></code> to a pickle dump file.</p>
+</dd>
+<dt><strong>loadtxt_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">np.loadtxt</span></code>.</p>
+</dd>
+<dt><strong>ls_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">scipy.optimize.least_squares</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>out</strong><span class="classifier">dict</span></dt><dd><p>A Python dictionary with the entries:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">out['R_best_fit']</span></code><span class="classifier">float</span></dt><dd><p>The best-fit radius of the input sample.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['x0']</span></code><span class="classifier">float</span></dt><dd><p>Translation in x</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['y0']</span></code><span class="classifier">float</span></dt><dd><p>Translation in y</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['z0']</span></code><span class="classifier">float</span></dt><dd><p>Translation in z</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['z1']</span></code><span class="classifier">float</span></dt><dd><p>Second translation in z, after rotation</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['alpharad']</span></code><span class="classifier">np.ndarray</span></dt><dd><p><span class="math">\alpha</span> angle to rotate input data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['betarad']</span></code><span class="classifier">np.ndarray</span></dt><dd><p><span class="math">\beta</span> angle to rotate input data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['input_pts']</span></code><span class="classifier">np.ndarray</span></dt><dd><p>The input points in a <span class="math">3 \times N</span> 2-D array.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['clip_box_mask']</span></code><span class="classifier">np.ndarray</span></dt><dd><p>The mask after applying the clip_box in a <span class="math">N</span> 1-D boolean array.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['output_pts']</span></code><span class="classifier">np.ndarray</span></dt><dd><p>The transformed points in a <span class="math">3 \times N</span> 2-D array.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<ol class="arabic simple">
+<li><p>General usage</p></li>
+</ol>
+<p>For a given cylinder with expected radius and height of <code class="docutils literal notranslate"><span class="pre">R_expected</span></code> and
+<code class="docutils literal notranslate"><span class="pre">H</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dicpp.fit_data</span> <span class="kn">import</span> <span class="n">best_fit_cylinder</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">best_fit_cylinder</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">H</span><span class="o">=</span><span class="n">H</span><span class="p">,</span> <span class="n">R_expected</span><span class="o">=</span><span class="n">R_expected</span><span class="p">)</span>
+<span class="n">R_best_fit</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;R_best_fit&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Using the transformation data</p></li>
+</ol>
+<p>For a given input data with <span class="math">x, y, z</span> positions in each line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;input_file.txt&#39;</span><span class="p">,</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the transformation can be obtained with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rx</span> <span class="o">=</span> <span class="n">calc_Rx</span><span class="p">(</span><span class="n">alpharad</span><span class="p">)</span>
+<span class="n">Ry</span> <span class="o">=</span> <span class="n">calc_Ry</span><span class="p">(</span><span class="n">betarad</span><span class="p">)</span>
+<span class="n">xnew</span><span class="p">,</span> <span class="n">ynew</span><span class="p">,</span> <span class="n">znew</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ry</span> <span class="o">@</span> <span class="n">Rx</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">y0</span><span class="p">,</span> <span class="n">z</span> <span class="o">+</span> <span class="n">z0</span><span class="p">)))</span>
+<span class="n">znew</span> <span class="o">+=</span> <span class="n">z1</span>
+</pre></div>
+</div>
+<p>and the inverse transformation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">znew</span> <span class="o">-=</span> <span class="n">z1</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">Rx</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Ry</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">xnew</span><span class="p">,</span> <span class="n">ynew</span><span class="p">,</span> <span class="n">znew</span><span class="p">)))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.best_fit_elliptic_cylinder">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">best_fit_elliptic_cylinder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_expected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_expected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_fit_with_fixed_a</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadtxt_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'ftol':</span> <span class="pre">None,</span> <span class="pre">'gtol':</span> <span class="pre">None,</span> <span class="pre">'jac':</span> <span class="pre">'3-point',</span> <span class="pre">'max_nfev':</span> <span class="pre">1000000,</span> <span class="pre">'method':</span> <span class="pre">'trf',</span> <span class="pre">'xtol':</span> <span class="pre">1e-08}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.best_fit_elliptic_cylinder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a best cylinder for a given set of measured data</p>
+<p>The coordinate transformation which must be performed in order to adjust
+the raw data to the finite element coordinate system is illustrated below:</p>
+<div class="figure align-default">
+<a class="reference internal image-reference" href="_images/best_fit_cylinder.jpg"><img alt="_images/best_fit_cylinder.jpg" src="_images/best_fit_cylinder.jpg" style="width: 400px;" /></a>
+</div>
+<p>This transformation can be represented in matrix form as:</p>
+<div class="math">
+<p><span class="math">\left\{\begin{matrix}
+x_c\\y_c\\z_c
+\end{matrix}\right\} = [R_z][R_y][R_x]
+\left\{\begin{matrix}
+x_i + x_0\\
+y_i + y_0\\
+z_i + z_0
+\end{matrix}\right\}
++
+\left\{\begin{matrix}
+0\\
+0\\
+z_1
+\end{matrix}\right\}</span></p>
+</div><p>with:</p>
+<div class="math">
+<p><span class="math">[R_x]=\begin{bmatrix}
+1 &amp;   0   &amp;   0 \\
+0 &amp; \cos{\alpha} &amp; -\sin{\alpha} \\
+0 &amp; \sin{\alpha} &amp;  \cos{\alpha}
+\end{bmatrix}</span></p>
+</div><div class="math">
+<p><span class="math">[R_y]=\begin{bmatrix}
+\cos{\beta} &amp;  0 &amp; \sin{\beta} \\
+0 &amp; 1 &amp; 0 \\
+-\sin{\beta} &amp; 0 &amp; \cos{\beta}
+\end{bmatrix}</span></p>
+</div><div class="math">
+<p><span class="math">[R_z]=\begin{bmatrix}
+cos{\gamma} &amp; -sin{\gamma} &amp;  0 \\
+sin{\gamma} &amp;   cos{\gamma} &amp;  0 \\
+ 0 &amp; 0 &amp; 1
+\end{bmatrix}</span></p>
+</div><p>There are <strong>seven</strong> unknown variables:</p>
+<ul class="simple">
+<li><p>the three components of the first translation <span class="math">\Delta x_0</span>, <span class="math">\Delta y_0</span> and <span class="math">\Delta z_0</span></p></li>
+<li><p>the rotation angles <span class="math">\alpha</span>,  <span class="math">\beta</span> and <span class="math">\gamma</span></p></li>
+<li><p>the second axial translation <span class="math">\Delta z_1</span></p></li>
+</ul>
+<p>The six unknowns are found in a non-linear least-squares optimization
+problem (solved with <code class="docutils literal notranslate"><span class="pre">scipy.optimize.least_squares</span></code>), where the measured data
+is transformed to the reference coordinate system and then compared with
+a reference cylinder in order to compute the residual error.</p>
+<p>Since the measured data may have an unknown minor and major radii <span class="math">a,b</span>, the solution also
+involves finding these radii.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>path</strong><span class="classifier">str or np.ndarray</span></dt><dd><p>The path of the file containing the data. Can be a full path using
+<code class="docutils literal notranslate"><span class="pre">r&quot;C:\Temp\inputfile.txt&quot;</span></code>, for example.
+The input file must have 3 columns “<span class="math">x</span> <span class="math">y</span> <span class="math">z</span>” expressed
+in Cartesian coordinates.</p>
+<p>This input can also be a <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> object, with <span class="math">x</span>, <span class="math">y</span>, <span class="math">z</span>
+in each corresponding column.</p>
+</dd>
+<dt><strong>H</strong><span class="classifier">float</span></dt><dd><p>The nominal height of the cylinder.</p>
+</dd>
+<dt><strong>a_expected, a_min, a_max</strong><span class="classifier">float, optional</span></dt><dd><p>The major radius of the elliptic cylinder, used as a first guess to find
+the best-fit major radius (<code class="docutils literal notranslate"><span class="pre">a_best_fit</span></code>). Note that if not specified more
+iterations may be required.</p>
+</dd>
+<dt><strong>b_expected, b_min, b_max</strong><span class="classifier">float, optional</span></dt><dd><p>The minor radius of the elliptic cylinder, used as a first guess to find
+the best-fit minor radius (<code class="docutils literal notranslate"><span class="pre">b_best_fit</span></code>). Note that if not specified more
+iterations may be required.</p>
+</dd>
+<dt><strong>best_fit_with_fixed_a</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, a constant value given by <code class="docutils literal notranslate"><span class="pre">a_expected</span></code> is used to
+calculate the best fit.</p>
+</dd>
+<dt><strong>alpha0, beta0, gamma0, x0, y0 ,z0, z1: float, optional</strong></dt><dd><p>Initial guess for alpha, beta, gamma, x0, y0, z0, z1.</p>
+</dd>
+<dt><strong>clip_box</strong><span class="classifier">None or sequence, optional</span></dt><dd><p>Clip input points into [xmin, xmax, ymin, ymax, zmin, zmax]</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code> activates log messages.</p>
+</dd>
+<dt><strong>output_path</strong><span class="classifier">str or None, optional</span></dt><dd><p>Save <code class="docutils literal notranslate"><span class="pre">out</span></code> to a pickle dump file.</p>
+</dd>
+<dt><strong>loadtxt_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">np.loadtxt</span></code></p>
+</dd>
+<dt><strong>ls_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">scipy.optimize.least_squares</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>out</strong><span class="classifier">dict</span></dt><dd><p>A Python dictionary with the entries:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">out['a_best_fit']</span></code>, <code class="docutils literal notranslate"><span class="pre">out['b_best_fit']</span></code>: float</dt><dd><p>The best-fit radii of the input sample.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['x0']</span></code><span class="classifier">float</span></dt><dd><p>Translation in x</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['y0']</span></code><span class="classifier">float</span></dt><dd><p>Translation in y</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['z0']</span></code><span class="classifier">float</span></dt><dd><p>Translation in z</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['alpharad']</span></code><span class="classifier">np.ndarray</span></dt><dd><p><span class="math">\alpha</span> angle to rotate input data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['betarad']</span></code><span class="classifier">np.ndarray</span></dt><dd><p><span class="math">\beta</span> angle to rotate input data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['gammarad']</span></code><span class="classifier">np.ndarray</span></dt><dd><p><span class="math">\gamma</span> angle to rotate input data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['input_pts']</span></code><span class="classifier">np.ndarray</span></dt><dd><p>The input points in a <span class="math">3 \times N</span> 2-D array.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['clip_box_mask']</span></code><span class="classifier">np.ndarray</span></dt><dd><p>The mask after applying the clip_box in a <span class="math">N</span> 1-D boolean array.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['output_pts']</span></code><span class="classifier">np.ndarray</span></dt><dd><p>The transformed points in a <span class="math">3 \times N</span> 2-D array.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<ol class="arabic simple">
+<li><p>General usage</p></li>
+</ol>
+<p>For a given elliptic cylinder with expected radii and height of <code class="docutils literal notranslate"><span class="pre">a_expected</span></code>,
+<code class="docutils literal notranslate"><span class="pre">b_expected</span></code> and <code class="docutils literal notranslate"><span class="pre">H</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dicpp.fit_data</span> <span class="kn">import</span> <span class="n">best_fit_elliptic_cylinder</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">best_fit_elliptic_cylinder</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">H</span><span class="o">=</span><span class="n">H</span><span class="p">,</span> <span class="n">a_expected</span><span class="o">=</span><span class="n">a_expected</span><span class="p">,</span>
+<span class="n">b_expected</span><span class="o">=</span><span class="n">b_expected</span><span class="p">)</span>
+<span class="n">a_best_fit</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;a_best_fit&#39;</span><span class="p">]</span>
+<span class="n">b_best_fit</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;b_best_fit&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Using the transformation data</p></li>
+</ol>
+<p>For a given input data with <span class="math">x, y, z</span> positions in each line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;input_file.txt&#39;</span><span class="p">,</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the transformation can be obtained with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rx</span> <span class="o">=</span> <span class="n">calc_Rx</span><span class="p">(</span><span class="n">alpharad</span><span class="p">)</span>
+<span class="n">Ry</span> <span class="o">=</span> <span class="n">calc_Ry</span><span class="p">(</span><span class="n">betarad</span><span class="p">)</span>
+<span class="n">Rz</span> <span class="o">=</span> <span class="n">calc_Rz</span><span class="p">(</span><span class="n">gammarad</span><span class="p">)</span>
+<span class="n">xnew</span><span class="p">,</span> <span class="n">ynew</span><span class="p">,</span> <span class="n">znew</span> <span class="o">=</span> <span class="p">(</span><span class="n">Rz</span> <span class="o">@</span> <span class="n">Ry</span> <span class="o">@</span> <span class="n">Rx</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">y0</span><span class="p">,</span> <span class="n">z</span> <span class="o">+</span> <span class="n">z0</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>and the inverse transformation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">Rx</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Ry</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Rz</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">xnew</span><span class="p">,</span> <span class="n">ynew</span><span class="p">,</span> <span class="n">znew</span><span class="p">)))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.calc_Rx">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">calc_Rx</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.calc_Rx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix around X for a 3D vector</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.calc_Ry">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">calc_Ry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.calc_Ry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix around Y for a 3D vector</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.calc_Rz">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">calc_Rz</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.calc_Rz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix around Z for a 3D vector</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.calc_c0">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">calc_c0</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcnum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fem_meridian_bot2top</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotatedeg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_m0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_n0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loadtxt_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.calc_c0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the coefficients that best fit the <span class="math">w_0</span> imperfection</p>
+<p>The measured data will be fit using one of the following functions,
+selected using the <code class="docutils literal notranslate"><span class="pre">funcnum</span></code> parameter:</p>
+<ol class="arabic simple">
+<li><p>Half-Sine Function</p></li>
+</ol>
+<div class="math">
+<p><span class="math">w_0 = \sum_{i=1}^{m_0}{ \sum_{j=0}^{n_0}{
+         {c_0}_{ij}^a sin{b_z} sin{b_\theta}
+        +{c_0}_{ij}^b sin{b_z} cos{b_\theta} }}</span></p>
+</div><ol class="arabic simple" start="2">
+<li><p>Half-Cosine Function (default)</p></li>
+</ol>
+<div class="math">
+<p><span class="math">w_0 = \sum_{i=0}^{m_0}{ \sum_{j=0}^{n_0}{
+        {c_0}_{ij}^a cos{b_z} sin{b_\theta}
+        +{c_0}_{ij}^b cos{b_z} cos{b_\theta} }}</span></p>
+</div><ol class="arabic simple" start="3">
+<li><p>Complete Fourier Series</p></li>
+</ol>
+<div class="math">
+<p><span class="math">w_0 = \sum_{i=0}^{m_0}{ \sum_{j=0}^{n_0}{
+         {c_0}_{ij}^a sin{b_z} sin{b_\theta}
+        +{c_0}_{ij}^b sin{b_z} cos{b_\theta}
+        +{c_0}_{ij}^c cos{b_z} sin{b_\theta}
+        +{c_0}_{ij}^d cos{b_z} cos{b_\theta} }}</span></p>
+</div><p>where:</p>
+<div class="math">
+<p><span class="math">b_z = i \pi \frac z H_{points}
+
+b_\theta = j \theta</span></p>
+</div><p>where <span class="math">H_{points}</span> represents the difference between the maximum and
+the minimum <span class="math">z</span> values in the imperfection file.</p>
+<p>The approximation can be written in matrix form as:</p>
+<div class="math">
+<p><span class="math">w_0 = [g] \{c_0\}</span></p>
+</div><p>where <span class="math">[g]</span> carries the base functions and <span class="math">{c_0}</span> the respective
+amplitudes. The solution consists on finding the best <span class="math">{c_0}</span> that
+minimizes the least-square error between the measured imperfection pattern
+and the <span class="math">w_0</span> function.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>path</strong><span class="classifier">str or np.ndarray</span></dt><dd><p>The path of the file containing the data. Can be a full path using
+<code class="docutils literal notranslate"><span class="pre">r&quot;C:\Temp\inputfile.txt&quot;</span></code>, for example.
+The input file must have 3 columns “<span class="math">\theta</span> <span class="math">z</span> <span class="math">imp</span>” expressed
+in Cartesian coordinates.</p>
+<p>This input can also be a <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> object, with
+<span class="math">\theta</span>, <span class="math">z</span>, <span class="math">imp</span> in each corresponding column.</p>
+</dd>
+<dt><strong>m0</strong><span class="classifier">int</span></dt><dd><p>Number of terms along the meridian (<span class="math">z</span>).</p>
+</dd>
+<dt><strong>n0</strong><span class="classifier">int</span></dt><dd><p>Number of terms along the circumference (<span class="math">\theta</span>).</p>
+</dd>
+<dt><strong>funcnum</strong><span class="classifier">int, optional</span></dt><dd><p>As explained above, selects the base functions used for
+the approximation.</p>
+</dd>
+<dt><strong>fem_meridian_bot2top</strong><span class="classifier">bool, optional</span></dt><dd><p>A boolean indicating if the finite element has the <span class="math">x</span> axis starting
+at the bottom or at the top.</p>
+</dd>
+<dt><strong>rotatedeg</strong><span class="classifier">float or None, optional</span></dt><dd><p>Rotation angle in degrees telling how much the imperfection pattern
+should be rotated about the <span class="math">X_3</span> (or <span class="math">Z</span>) axis.</p>
+</dd>
+<dt><strong>filter_m0</strong><span class="classifier">list, optional</span></dt><dd><p>The values of <code class="docutils literal notranslate"><span class="pre">m0</span></code> that should be filtered (see <a class="reference internal" href="#dicpp.fit_data.filter_c0" title="dicpp.fit_data.filter_c0"><code class="xref py py-func docutils literal notranslate"><span class="pre">filter_c0()</span></code></a>).</p>
+</dd>
+<dt><strong>filter_n0</strong><span class="classifier">list, optional</span></dt><dd><p>The values of <code class="docutils literal notranslate"><span class="pre">n0</span></code> that should be filtered (see <a class="reference internal" href="#dicpp.fit_data.filter_c0" title="dicpp.fit_data.filter_c0"><code class="xref py py-func docutils literal notranslate"><span class="pre">filter_c0()</span></code></a>).</p>
+</dd>
+<dt><strong>sample_size</strong><span class="classifier">None or int, optional</span></dt><dd><p>An in  specifying how many points of the imperfection file should
+be used. If <code class="docutils literal notranslate"><span class="pre">None</span></code> is used all points file will be used in the
+computations.</p>
+</dd>
+<dt><strong>loadtxt_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">np.loadtxt</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>out</strong><span class="classifier">np.ndarray</span></dt><dd><p>A 1-D array with the best-fit coefficients.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If a similar imperfection pattern is expected along the meridian and along
+the circumference, the analyst can use an optimized relation between
+<code class="docutils literal notranslate"><span class="pre">m0</span></code> and <code class="docutils literal notranslate"><span class="pre">n0</span></code> in order to achieve a higher accuracy for a given
+computational cost, as proposed by Castro et al. (2014):</p>
+<div class="math">
+<p><span class="math">n_0 = m_0 \frac{\pi(R_{bot}+R_{top})}{2H}</span></p>
+</div></dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.fa">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">fa</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zs_norm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thetas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcnum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.fa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the matrix with the base functions for <span class="math">w_0</span></p>
+<p>The calculated matrix is directly used to calculate the <span class="math">w_0</span> displacement
+field, when the corresponding coefficients <span class="math">c_0</span> are known, through:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">fa</span><span class="p">(</span><span class="n">m0</span><span class="p">,</span> <span class="n">n0</span><span class="p">,</span> <span class="n">zs_norm</span><span class="p">,</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">funcnum</span><span class="p">)</span>
+<span class="n">w0</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c0</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m0</strong><span class="classifier">int</span></dt><dd><p>The number of terms along the meridian.</p>
+</dd>
+<dt><strong>n0</strong><span class="classifier">int</span></dt><dd><p>The number of terms along the circumference.</p>
+</dd>
+<dt><strong>zs_norm</strong><span class="classifier">np.ndarray</span></dt><dd><p>The normalized <span class="math">z</span> coordinates (from 0. to 1.) used to compute
+the base functions.</p>
+</dd>
+<dt><strong>thetas</strong><span class="classifier">np.ndarray</span></dt><dd><p>The angles in radians representing the circumferential positions.</p>
+</dd>
+<dt><strong>funcnum</strong><span class="classifier">int, optional</span></dt><dd><p>The function used for the approximation (see function <a class="reference internal" href="#dicpp.fit_data.calc_c0" title="dicpp.fit_data.calc_c0"><code class="xref py py-func docutils literal notranslate"><span class="pre">calc_c0()</span></code></a>)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.filter_c0">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">filter_c0</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_m0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_n0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcnum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.filter_c0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply filter to the imperfection coefficients <span class="math">\{c_0\}</span></p>
+<p>A filter consists on removing some frequencies that are known to be
+related to rigid body modes or spurious measurement noise. The frequencies
+to be removed should be passed through inputs <code class="docutils literal notranslate"><span class="pre">filter_m0</span></code> and
+<code class="docutils literal notranslate"><span class="pre">filter_n0</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m0</strong><span class="classifier">int</span></dt><dd><p>The number of terms along the meridian.</p>
+</dd>
+<dt><strong>n0</strong><span class="classifier">int</span></dt><dd><p>The number of terms along the circumference.</p>
+</dd>
+<dt><strong>c0</strong><span class="classifier">np.ndarray</span></dt><dd><p>The coefficients of the imperfection pattern.</p>
+</dd>
+<dt><strong>filter_m0</strong><span class="classifier">list</span></dt><dd><p>The values of <code class="docutils literal notranslate"><span class="pre">m0</span></code> that should be filtered.</p>
+</dd>
+<dt><strong>filter_n0</strong><span class="classifier">list</span></dt><dd><p>The values of <code class="docutils literal notranslate"><span class="pre">n0</span></code> that should be filtered.</p>
+</dd>
+<dt><strong>funcnum</strong><span class="classifier">int, optional</span></dt><dd><p>The function used for the approximation (see function <a class="reference internal" href="#dicpp.fit_data.calc_c0" title="dicpp.fit_data.calc_c0"><code class="xref py py-func docutils literal notranslate"><span class="pre">calc_c0()</span></code></a>)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>c0_filtered</strong><span class="classifier">np.ndarray</span></dt><dd><p>The filtered coefficients of the imperfection pattern.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.fit_data.fw0">
+<code class="sig-prename descclassname"><span class="pre">dicpp.fit_data.</span></code><code class="sig-name descname"><span class="pre">fw0</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs_norm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcnum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.fit_data.fw0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the imperfection field <span class="math">w_0</span> for a given input</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m0</strong><span class="classifier">int</span></dt><dd><p>The number of terms along the meridian.</p>
+</dd>
+<dt><strong>n0</strong><span class="classifier">int</span></dt><dd><p>The number of terms along the circumference.</p>
+</dd>
+<dt><strong>c0</strong><span class="classifier">np.ndarray</span></dt><dd><p>The coefficients of the imperfection pattern.</p>
+</dd>
+<dt><strong>xs_norm</strong><span class="classifier">np.ndarray</span></dt><dd><p>The meridian coordinate (<span class="math">x</span>) normalized to be between <code class="docutils literal notranslate"><span class="pre">0.</span></code> and
+<code class="docutils literal notranslate"><span class="pre">1.</span></code>.</p>
+</dd>
+<dt><strong>ts</strong><span class="classifier">np.ndarray</span></dt><dd><p>The angles in radians representing the circumferential coordinate
+(<span class="math">\theta</span>).</p>
+</dd>
+<dt><strong>funcnum</strong><span class="classifier">int, optional</span></dt><dd><p>The function used for the approximation (see function <a class="reference internal" href="#dicpp.fit_data.calc_c0" title="dicpp.fit_data.calc_c0"><code class="xref py py-func docutils literal notranslate"><span class="pre">calc_c0()</span></code></a>)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>w0s</strong><span class="classifier">np.ndarray</span></dt><dd><p>An array with the same shape of <code class="docutils literal notranslate"><span class="pre">xs_norm</span></code> containing the calculated
+imperfections.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The inputs <code class="docutils literal notranslate"><span class="pre">xs_norm</span></code> and <code class="docutils literal notranslate"><span class="pre">ts</span></code> must be of the same size.</p>
+<p>The inputs must satisfy <code class="docutils literal notranslate"><span class="pre">c0.shape[0]</span> <span class="pre">==</span> <span class="pre">size*m0*n0</span></code>, where:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">size=2</span></code> if <code class="docutils literal notranslate"><span class="pre">funcnum==1</span> <span class="pre">or</span> <span class="pre">funcnum==2</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">size=4</span></code> if <code class="docutils literal notranslate"><span class="pre">funcnum==3</span></code></p></li>
+</ul>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dicpp.interpolate"></span><div class="section" id="interpolate-dicpp-interpolate">
+<h3>Interpolate (<a class="reference internal" href="#module-dicpp.interpolate" title="dicpp.interpolate"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp.interpolate</span></code></a>)<a class="headerlink" href="#interpolate-dicpp-interpolate" title="Permalink to this headline">¶</a></h3>
+<p>This module includes some interpolation utilities.</p>
+<dl class="py function">
+<dt id="dicpp.interpolate.interp_theta_z_imp">
+<code class="sig-prename descclassname"><span class="pre">dicpp.interpolate.</span></code><code class="sig-name descname"><span class="pre">interp_theta_z_imp</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destiny</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphadeg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H_measured</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_bottom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stretch_H</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_offset_bot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotatedeg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power_parameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_bot_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_top_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.interpolate.interp_theta_z_imp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolates a data set in the <span class="math">\theta, z, imp</span> format</p>
+<p>This function uses the inverse-weighted algorithm (<a class="reference internal" href="#dicpp.interpolate.inv_weighted" title="dicpp.interpolate.inv_weighted"><code class="xref py py-func docutils literal notranslate"><span class="pre">inv_weighted()</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">numpy.ndarray, shape (N, 3)</span></dt><dd><p>The data or an array containing the imperfection file in the <span class="math">(\theta,
+Z, imp)</span> format.</p>
+</dd>
+<dt><strong>destiny</strong><span class="classifier">numpy.ndarray, shape (M, 3)</span></dt><dd><p>The destiny coordinates <span class="math">(x, y, z)</span> where the values will be interpolated
+to.</p>
+</dd>
+<dt><strong>alphadeg</strong><span class="classifier">float</span></dt><dd><p>The cone semi-vertex angle in degrees.</p>
+</dd>
+<dt><strong>H_measured</strong><span class="classifier">float</span></dt><dd><p>The total height of the measured test specimen, including eventual
+resin rings at the edges.</p>
+</dd>
+<dt><strong>H_model</strong><span class="classifier">float</span></dt><dd><p>The total height of the new model, including eventual resin rings at
+the edges.</p>
+</dd>
+<dt><strong>R_bottom</strong><span class="classifier">float</span></dt><dd><p>The radius of the model taken at the bottom edge.</p>
+</dd>
+<dt><strong>stretch_H</strong><span class="classifier">bool, optional</span></dt><dd><p>Tells if the height of the measured points, which is usually smaller
+than the height of the test specimen, should be stretched to fill
+the whole test specimen. If not, the points will be placed in the
+middle or using the offset given by <code class="docutils literal notranslate"><span class="pre">z_offset_bot</span></code> and the
+area not covered by the measured points will be interpolated
+using the closest available points (the imperfection
+pattern will look like there was an extrusion close to the edges).</p>
+</dd>
+<dt><strong>z_offset_bot</strong><span class="classifier">float, optional</span></dt><dd><p>The offset that should be used from the bottom of the measured points
+to the bottom of the test specimen.</p>
+</dd>
+<dt><strong>rotatedeg</strong><span class="classifier">float, optional</span></dt><dd><p>Rotation angle in degrees telling how much the imperfection pattern
+should be rotated about the <span class="math">X_3</span> (or <span class="math">Z</span>) axis.</p>
+</dd>
+<dt><strong>ncp</strong><span class="classifier">int, optional</span></dt><dd><p>Number of closest points used in the inverse-weighted interpolation.</p>
+</dd>
+<dt><strong>power_parameter</strong><span class="classifier">float, optional</span></dt><dd><p>Power of inverse weighted interpolation function.</p>
+</dd>
+<dt><strong>ignore_bot_h</strong><span class="classifier">None or float, optional</span></dt><dd><p>Nodes close to the bottom edge are ignored according to this
+meridional distance.</p>
+</dd>
+<dt><strong>ignore_top_h</strong><span class="classifier">None or float, optional</span></dt><dd><p>Nodes close to the top edge are ignored according to this meridional
+distance.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>ans</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>An array with M elements containing the interpolated values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dicpp.interpolate.inv_weighted">
+<code class="sig-prename descclassname"><span class="pre">dicpp.interpolate.</span></code><code class="sig-name descname"><span class="pre">inv_weighted</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destiny</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power_parameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.interpolate.inv_weighted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolates the values taken at one group of points into
+another using an inverse-weighted algorithm</p>
+<p>In the inverse-weighted algorithm a number of <span class="math">n_{CP}</span> measured points
+of the input parameter <code class="docutils literal notranslate"><span class="pre">source</span></code> that are closest to a given node in
+the input parameter <code class="docutils literal notranslate"><span class="pre">destiny</span></code> are found and the <code class="docutils literal notranslate"><span class="pre">values</span></code> are
+interpolated as follows:</p>
+<div class="math">
+<p><span class="math">{w_0}_{node} = \frac{\sum_{i}^{n_{CP}}{{w_0}_i\frac{1}{w_i}}}
+                    {\sum_{i}^{n_{CP}}{\frac{1}{w_i}}}</span></p>
+</div><p>where <span class="math">w_i</span> is the inverse weight of each measured point, calculated as:</p>
+<div class="math">
+<p><span class="math">w_i = \left[(x_{node}-x_i)^2+(y_{node}-y_i)^2+(z_{node}-z_i)^2
+      \right]^p</span></p>
+</div><p>with <span class="math">p</span> being a power parameter that when increased will increase the
+relative influence of a closest point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>values: np.ndarray, shape (N)</strong></dt><dd><p>Values to be interpolated</p>
+</dd>
+<dt><strong>source</strong><span class="classifier">numpy.ndarray, shape (N, ndim)</span></dt><dd><p>Source points corresponding to “values”.</p>
+</dd>
+<dt><strong>destiny</strong><span class="classifier">numpy.ndarray, shape (M, ndim)</span></dt><dd><p>The new coordinates where the values will be interpolated to.</p>
+</dd>
+<dt><strong>ncp</strong><span class="classifier">int, optional</span></dt><dd><p>Number of closest points used in the inverse-weighted interpolation.</p>
+</dd>
+<dt><strong>power_parameter</strong><span class="classifier">float, optional</span></dt><dd><p>Power of inverse weighted interpolation function.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>dist, data_new</strong><span class="classifier">numpy.ndarray, numpy.ndarray</span></dt><dd><p>Two 1-D arrays with the distances and interpolated values. The size of
+this array is <code class="docutils literal notranslate"><span class="pre">destiny.shape[0]</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dicpp.stitch"></span><div class="section" id="fitting-data-dicpp-stitch">
+<h3>Fitting Data (<a class="reference internal" href="#module-dicpp.stitch" title="dicpp.stitch"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp.stitch</span></code></a>)<a class="headerlink" href="#fitting-data-dicpp-stitch" title="Permalink to this headline">¶</a></h3>
+<p>Functions to stitch best-fit imperfection data.</p>
+<dl class="py function">
+<dt id="dicpp.stitch.stitch">
+<code class="sig-prename descclassname"><span class="pre">dicpp.stitch.</span></code><code class="sig-name descname"><span class="pre">stitch</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bf1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_deg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_deg2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_deg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_zarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_dist_deg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_deg_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_deg_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_deg_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_z_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_z_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_z_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_var_z_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_var_z_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_var_deg_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_var_deg_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'diff_step':</span> <span class="pre">0.2,</span> <span class="pre">'ftol':</span> <span class="pre">None,</span> <span class="pre">'gtol':</span> <span class="pre">None,</span> <span class="pre">'jac':</span> <span class="pre">'3-point',</span> <span class="pre">'max_nfev':</span> <span class="pre">1000,</span> <span class="pre">'method':</span> <span class="pre">'trf',</span> <span class="pre">'xtol':</span> <span class="pre">0.0001}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dicpp.stitch.stitch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate <span class="math">\Delta \theta_2</span> and <span class="math">\Delta z_2</span> that stitches the second best fit
+results to the first.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bf2</span></code> must be after <code class="docutils literal notranslate"><span class="pre">bf1</span></code> in a positive rotation about <code class="docutils literal notranslate"><span class="pre">z</span></code>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>bf1, bf2</strong><span class="classifier">dict</span></dt><dd><p>Results returned by the best fit functions. If the results are for a
+best-fit elliptic cylinder, the imperfections are remapped to a
+cylinder of radius``R=out[‘a_best_fit’]``.</p>
+</dd>
+<dt><strong>pos_deg1, pos_deg_2</strong><span class="classifier">float</span></dt><dd><p>Nominal circumferential position in degrees of the adjacent best fit
+results. <code class="docutils literal notranslate"><span class="pre">pos_deg1</span></code> must be such that the <span class="math">x</span> axis becomes normal to <code class="docutils literal notranslate"><span class="pre">bf1</span></code>.</p>
+</dd>
+<dt><strong>height_ref</strong><span class="classifier">float</span></dt><dd><p>Reference height.</p>
+</dd>
+<dt><strong>probe_deg</strong><span class="classifier">float</span></dt><dd><p>Position in degrees of the probing line.</p>
+</dd>
+<dt><strong>probe_R</strong><span class="classifier">float</span></dt><dd><p>Radial position of the probing line.</p>
+</dd>
+<dt><strong>probe_zarray: array-like</strong></dt><dd><p>Array with the z positions of the probing line.</p>
+</dd>
+<dt><strong>probe_dist_deg</strong><span class="classifier">float, optional</span></dt><dd><p>Angular distance in degrees from the probing line. Points beyond this
+distance are trimmed out.</p>
+</dd>
+<dt><strong>init_deg_min, init_deg_max, init_z_min, init_z_max</strong><span class="classifier">float, optional</span></dt><dd><p>Interval to search for the best initial point for the stitching
+optimization.</p>
+</dd>
+<dt><strong>init_deg_step, init_z_step</strong><span class="classifier">int, optional</span></dt><dd><p>Number of points in the interval to search for the best initial point
+for the stitching optimization.</p>
+</dd>
+<dt><strong>opt_var_z_min, opt_var_z_max, opt_var_deg_min, opt_var_deg_max</strong><span class="classifier">float, optional</span></dt><dd><p>Variation from initial point to be used in the stitching optimization.</p>
+</dd>
+<dt><strong>ls_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">scipy.optimize.least_squares</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>out</strong><span class="classifier">dict</span></dt><dd><p>A Python dictionary with the entries:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">out['delta_deg']</span></code><span class="classifier">float</span></dt><dd><p>The <span class="math">\Delta \theta_2</span> offset that stitches the second best-fit
+result to the first.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['delta_z']</span></code><span class="classifier">float</span></dt><dd><p>The <span class="math">\Delta z_2</span> offset that stitches the second best-fit result to
+the first.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['dr1']</span></code><span class="classifier">array-like</span></dt><dd><p>Radial imperfection of the first best-fit result at the probing
+line.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">out['dr2']</span></code><span class="classifier">array-like</span></dt><dd><p>Radial imperfection of the second best-fit result at the probing
+line.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Copyright</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="mi">2021</span><span class="o">-</span><span class="p">,</span> <span class="n">Saullo</span> <span class="n">G</span><span class="o">.</span> <span class="n">P</span><span class="o">.</span> <span class="n">Castro</span> <span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">P</span><span class="o">.</span><span class="n">Castro</span><span class="nd">@tudelft</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span>
+<span class="n">All</span> <span class="n">rights</span> <span class="n">reserved</span><span class="o">.</span>
+
+<span class="n">Redistribution</span> <span class="ow">and</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">source</span> <span class="ow">and</span> <span class="n">binary</span> <span class="n">forms</span><span class="p">,</span> <span class="k">with</span> <span class="ow">or</span> <span class="n">without</span> <span class="n">modification</span><span class="p">,</span>
+<span class="n">are</span> <span class="n">permitted</span> <span class="n">provided</span> <span class="n">that</span> <span class="n">the</span> <span class="n">following</span> <span class="n">conditions</span> <span class="n">are</span> <span class="n">met</span><span class="p">:</span>
+
+  <span class="n">Redistributions</span> <span class="n">of</span> <span class="n">source</span> <span class="n">code</span> <span class="n">must</span> <span class="n">retain</span> <span class="n">the</span> <span class="n">above</span> <span class="n">copyright</span> <span class="n">notice</span><span class="p">,</span> <span class="n">this</span>
+  <span class="nb">list</span> <span class="n">of</span> <span class="n">conditions</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">following</span> <span class="n">disclaimer</span><span class="o">.</span>
+
+  <span class="n">Redistributions</span> <span class="ow">in</span> <span class="n">binary</span> <span class="n">form</span> <span class="n">must</span> <span class="n">reproduce</span> <span class="n">the</span> <span class="n">above</span> <span class="n">copyright</span> <span class="n">notice</span><span class="p">,</span> <span class="n">this</span>
+  <span class="nb">list</span> <span class="n">of</span> <span class="n">conditions</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">following</span> <span class="n">disclaimer</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">documentation</span> <span class="ow">and</span><span class="o">/</span><span class="ow">or</span>
+  <span class="n">other</span> <span class="n">materials</span> <span class="n">provided</span>
+  
+<span class="n">THIS</span> <span class="n">SOFTWARE</span> <span class="n">IS</span> <span class="n">PROVIDED</span> <span class="n">BY</span> <span class="n">THE</span> <span class="n">COPYRIGHT</span> <span class="n">HOLDERS</span> <span class="n">AND</span> <span class="n">CONTRIBUTORS</span> <span class="s2">&quot;AS IS&quot;</span> <span class="n">AND</span>
+<span class="n">ANY</span> <span class="n">EXPRESS</span> <span class="n">OR</span> <span class="n">IMPLIED</span> <span class="n">WARRANTIES</span><span class="p">,</span> <span class="n">INCLUDING</span><span class="p">,</span> <span class="n">BUT</span> <span class="n">NOT</span> <span class="n">LIMITED</span> <span class="n">TO</span><span class="p">,</span> <span class="n">THE</span> <span class="n">IMPLIED</span>
+<span class="n">WARRANTIES</span> <span class="n">OF</span> <span class="n">MERCHANTABILITY</span> <span class="n">AND</span> <span class="n">FITNESS</span> <span class="n">FOR</span> <span class="n">A</span> <span class="n">PARTICULAR</span> <span class="n">PURPOSE</span> <span class="n">ARE</span>
+<span class="n">DISCLAIMED</span><span class="o">.</span> <span class="n">IN</span> <span class="n">NO</span> <span class="n">EVENT</span> <span class="n">SHALL</span> <span class="n">THE</span> <span class="n">COPYRIGHT</span> <span class="n">HOLDER</span> <span class="n">OR</span> <span class="n">CONTRIBUTORS</span> <span class="n">BE</span> <span class="n">LIABLE</span> <span class="n">FOR</span>
+<span class="n">ANY</span> <span class="n">DIRECT</span><span class="p">,</span> <span class="n">INDIRECT</span><span class="p">,</span> <span class="n">INCIDENTAL</span><span class="p">,</span> <span class="n">SPECIAL</span><span class="p">,</span> <span class="n">EXEMPLARY</span><span class="p">,</span> <span class="n">OR</span> <span class="n">CONSEQUENTIAL</span> <span class="n">DAMAGES</span>
+<span class="p">(</span><span class="n">INCLUDING</span><span class="p">,</span> <span class="n">BUT</span> <span class="n">NOT</span> <span class="n">LIMITED</span> <span class="n">TO</span><span class="p">,</span> <span class="n">PROCUREMENT</span> <span class="n">OF</span> <span class="n">SUBSTITUTE</span> <span class="n">GOODS</span> <span class="n">OR</span> <span class="n">SERVICES</span><span class="p">;</span>
+<span class="n">LOSS</span> <span class="n">OF</span> <span class="n">USE</span><span class="p">,</span> <span class="n">DATA</span><span class="p">,</span> <span class="n">OR</span> <span class="n">PROFITS</span><span class="p">;</span> <span class="n">OR</span> <span class="n">BUSINESS</span> <span class="n">INTERRUPTION</span><span class="p">)</span> <span class="n">HOWEVER</span> <span class="n">CAUSED</span> <span class="n">AND</span> <span class="n">ON</span>
+<span class="n">ANY</span> <span class="n">THEORY</span> <span class="n">OF</span> <span class="n">LIABILITY</span><span class="p">,</span> <span class="n">WHETHER</span> <span class="n">IN</span> <span class="n">CONTRACT</span><span class="p">,</span> <span class="n">STRICT</span> <span class="n">LIABILITY</span><span class="p">,</span> <span class="n">OR</span> <span class="n">TORT</span>
+<span class="p">(</span><span class="n">INCLUDING</span> <span class="n">NEGLIGENCE</span> <span class="n">OR</span> <span class="n">OTHERWISE</span><span class="p">)</span> <span class="n">ARISING</span> <span class="n">IN</span> <span class="n">ANY</span> <span class="n">WAY</span> <span class="n">OUT</span> <span class="n">OF</span> <span class="n">THE</span> <span class="n">USE</span> <span class="n">OF</span> <span class="n">THIS</span>
+<span class="n">SOFTWARE</span><span class="p">,</span> <span class="n">EVEN</span> <span class="n">IF</span> <span class="n">ADVISED</span> <span class="n">OF</span> <span class="n">THE</span> <span class="n">POSSIBILITY</span> <span class="n">OF</span> <span class="n">SUCH</span> <span class="n">DAMAGE</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Digital Image Correlation Post Processing <span class="math">dicpp</span> module</a><ul>
+<li><a class="reference internal" href="#digital-image-correlation-dicpp">Digital Image Correlation (<code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp</span></code>)</a><ul>
+<li><a class="reference internal" href="#fitting-data-dicpp-fit-data">Fitting Data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp.fit_data</span></code>)</a></li>
+<li><a class="reference internal" href="#interpolate-dicpp-interpolate">Interpolate (<code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp.interpolate</span></code>)</a></li>
+<li><a class="reference internal" href="#fitting-data-dicpp-stitch">Fitting Data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">dicpp.stitch</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">dicpp 0.1.0.dev0+62581a4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Digital Image Correlation Post Processing <span class="math">dicpp</span> module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021-, Saullo G. P. Castro.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+    </div>
+  </body>
+</html>
