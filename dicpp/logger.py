@@ -1,13 +1,13 @@
-def log(msg, level=0):
-    print('\t'*level + msg)
-    return msg
+def msg(text, level=0):
+    print('\t'*level + text)
+    return text
 
-def warn(msg, level=0):
-    msg = 'WARNING: ' + msg
-    print('\t'*level + msg)
-    return msg
+def warn(text, level=0):
+    text = 'WARNING: ' + text
+    print('\t'*level + text)
+    return text
 
-def error(msg, level=0):
-    msg = 'ERROR: ' + msg
-    print('\t'*level + msg)
-    return msg
+def error(text, level=0):
+    text = 'ERROR: ' + text
+    print('\t'*level + text)
+    return text

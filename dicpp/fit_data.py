@@ -217,7 +217,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
 
 
     """
-    if verbose: log('Best-fit cylinder for: ' + path)
+    if verbose: msg('Best-fit cylinder for: ' + path)
     if isinstance(path, np.ndarray):
         input_pts = path.T
     else:
@@ -232,7 +232,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
             input_pts = input_pts[:, sample(range(num), int(sample_size))]
 
     if clip_box is not None:
-        log('appying clip_box', level=1)
+        msg('appying clip_box', level=1)
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
         x, y, z = input_pts
         clip_box_mask = ((clip_box[0] <= x) &
@@ -298,14 +298,14 @@ def best_fit_cylinder(path, H, R_expected=10.,
         z1 = -1
 
     # performing the least_squares optimization
-    if verbose: log('First optimization to find alpha, beta, x0, y0, z0', level=1)
+    if verbose: msg('First optimization to find alpha, beta, x0, y0, z0', level=1)
     if best_fit_with_fixed_radius:
         p = [alpha0, beta0, x0, y0, z0]
         bounds = ((-pi, -pi, -inf, -inf, -inf),
                   (pi, pi, inf, inf, inf))
         res = least_squares(fun=calc_dist_cylinder_fixed_R, x0=p, bounds=bounds,
                 args=(input_pts_clip,), **ls_kwargs)
-        if verbose: log('least_squares status: ' + res.message, level=2)
+        if verbose: msg('least_squares status: ' + res.message, level=2)
         popt = res.x
         alpha = popt[0]
         beta = popt[1]
@@ -331,28 +331,28 @@ def best_fit_cylinder(path, H, R_expected=10.,
 
     interm_pts = Ry.dot(Rx.dot(input_pts_clip + np.array([x0, y0, z0])[:, None]))
 
-    if verbose: log('Second optimization to find z1', level=1)
+    if verbose: msg('Second optimization to find z1', level=1)
     bounds = ([-inf], [+inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts, ), **ls_kwargs)
-    if verbose: log('least_squares status: ' + res.message, level=2)
+    if verbose: msg('least_squares status: ' + res.message, level=2)
     z1 = res.x[0]
     interm_pts[2] += z1
 
     output_pts = interm_pts
 
     if verbose:
-        log('First translation:', level=1)
-        log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0), level=1)
-        log('', level=1)
-        log('Rotation angles:', level=1)
-        log('alpha: {0} rad; beta: {1} rad'.format(alpha, beta), level=1)
-        log('', level=1)
-        log('Second translation:', level=1)
-        log('z1: {0}'.format(z1), level=1)
-        log('', level=1)
-        log('Best fit radius: {0}'.format(R_best_fit), level=1)
-        log('', level=1)
+        msg('First translation:', level=1)
+        msg('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0), level=1)
+        msg('', level=1)
+        msg('Rotation angles:', level=1)
+        msg('alpha: {0} rad; beta: {1} rad'.format(alpha, beta), level=1)
+        msg('', level=1)
+        msg('Second translation:', level=1)
+        msg('z1: {0}'.format(z1), level=1)
+        msg('', level=1)
+        msg('Best fit radius: {0}'.format(R_best_fit), level=1)
+        msg('', level=1)
 
     out = dict(R_best_fit=R_best_fit,
                 input_pts=input_pts,
@@ -540,7 +540,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
 
 
     """
-    if verbose: log('Best-fit elliptic cylinder for: ' + path)
+    if verbose: msg('Best-fit elliptic cylinder for: ' + path)
     if isinstance(path, np.ndarray):
         input_pts = path.T
     else:
@@ -550,7 +550,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         raise ValueError('Input does not have the format: "x, y, z"')
 
     if clip_box is not None:
-        log('appying clip_box', level=1)
+        msg('appying clip_box', level=1)
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
         x, y, z = input_pts
         clip_box_mask = ((clip_box[0] <= x) &
@@ -629,13 +629,13 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         z1 = -1
 
     # performing the least_squares optimization
-    if verbose: log('First optimization to find alpha, beta, x0, y0, z0', level=1)
+    if verbose: msg('First optimization to find alpha, beta, x0, y0, z0', level=1)
     p = [alpha0, beta0, x0, y0, z0]
     bounds = ((-pi, -pi, -inf, -inf, -inf),
               (pi, pi, inf, inf, inf))
     res = least_squares(fun=calc_dist_cylinder, x0=p, bounds=bounds,
             args=(input_pts_clip,), **ls_kwargs)
-    if verbose: log('least_squares status: ' + res.message, level=2)
+    if verbose: msg('least_squares status: ' + res.message, level=2)
     popt = res.x
     alpha = popt[0]
     beta = popt[1]
@@ -644,14 +644,14 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     x0, y0, z0 = popt[2:]
     interm_pts1 = (Ry @ Rx @ (input_pts_clip + np.array([x0, y0, z0])[:, None]))
 
-    if verbose: log('Second optimization to find a, b, gamma', level=1)
+    if verbose: msg('Second optimization to find a, b, gamma', level=1)
     if best_fit_with_fixed_a:
         p = [gamma0, b_expected]
         bounds = ((-pi/2, b_min),
                   (+pi/2, b_max))
-        res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
+        res = least_squares(fun=calc_dist_ellipse_fixed_a, x0=p, bounds=bounds,
                 args=(interm_pts1, ), **ls_kwargs)
-        if verbose: log('least_squares status: ' + res.message, level=2)
+        if verbose: msg('least_squares status: ' + res.message, level=2)
         gamma = res.x[0]
         a_best_fit = a_expected
         b_best_fit = res.x[1]
@@ -662,35 +662,35 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
                   (+pi/2, a_max, b_max))
         res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
                 args=(interm_pts1, ), **ls_kwargs)
-        if verbose: log('least_squares status: ' + res.message, level=2)
+        if verbose: msg('least_squares status: ' + res.message, level=2)
         gamma = res.x[0]
         a_best_fit, b_best_fit = res.x[1:]
 
     Rz = calc_Rz(gamma)
     interm_pts2 = Rz @ interm_pts1
 
-    if verbose: log('Third optimization to find z1', level=1)
+    if verbose: msg('Third optimization to find z1', level=1)
     bounds = ([-inf], [+inf])
     res = least_squares(fun=calc_dist_dz, x0=z1, bounds=bounds,
             args=(interm_pts2, ), **ls_kwargs)
-    if verbose: log('least_squares status', res.message, level=2)
+    if verbose: msg('least_squares status: ' + res.message, level=2)
     z1 = res.x[0]
     interm_pts2[2] += z1
 
     output_pts = interm_pts2
 
     if verbose:
-        log('First translation:', level=1)
-        log('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0), level=1)
-        log('', level=1)
-        log('Rotation angles:', level=1)
-        log('alpha: {0} rad; beta: {1} rad; gamma: {2} rad'.format(alpha, beta, gamma), level=1)
-        log('', level=1)
-        log('Second translation:', level=1)
-        log('z1: {0}'.format(z1), level=1)
-        log('', level=1)
-        log('Best fit radii: a={0}, b={1}'.format(a_best_fit, b_best_fit), level=1)
-        log('', level=1)
+        msg('First translation:', level=1)
+        msg('x0, y0, z0: {0}, {1}, {2}'.format(x0, y0, z0), level=1)
+        msg('', level=1)
+        msg('Rotation angles:', level=1)
+        msg('alpha: {0} rad; beta: {1} rad; gamma: {2} rad'.format(alpha, beta, gamma), level=1)
+        msg('', level=1)
+        msg('Second translation:', level=1)
+        msg('z1: {0}'.format(z1), level=1)
+        msg('', level=1)
+        msg('Best fit radii: a={0}, b={1}'.format(a_best_fit, b_best_fit), level=1)
+        msg('', level=1)
 
     out = dict(a_best_fit=a_best_fit,
                 b_best_fit=b_best_fit,
@@ -834,8 +834,8 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
         raise ValueError(
                 'In the input: "theta, z, imp"; "theta" must be in radians!')
 
-    log('Finding c0 coefficients for {0}'.format(str(os.path.basename(path))))
-    log('using funcnum {0}'.format(funcnum), level=1)
+    msg('Finding c0 coefficients for {0}'.format(str(os.path.basename(path))))
+    msg('using funcnum {0}'.format(funcnum), level=1)
 
     if sample_size is not None:
         num = input_pts.shape[0]
@@ -866,11 +866,11 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
 
     a = fa(m0, n0, zs, ts, funcnum)
     A = aslinearoperator(a)
-    log('Base functions calculated', level=1)
+    msg('Base functions calculated', level=1)
     res = lsq_linear(A, w0pts)
     c0 = res.x
     residues = res.fun
-    log('Finished scipy.optimize.lsq_linear', level=1)
+    msg('Finished scipy.optimize.lsq_linear', level=1)
 
     if filter_m0 is not None or filter_n0 is not None:
         c0 = filter_c0(m0, n0, c0, filter_m0, filter_n0, funcnum=funcnum)
@@ -907,12 +907,12 @@ def filter_c0(m0, n0, c0, filter_m0, filter_n0, funcnum=2):
         The filtered coefficients of the imperfection pattern.
 
     """
-    log('Applying filter...')
-    log('using c0.shape={0}, funcnum={1}'.format(c0.shape, funcnum), level=1)
+    msg('Applying filter...')
+    msg('using c0.shape={0}, funcnum={1}'.format(c0.shape, funcnum), level=1)
     fm0 = filter_m0
     fn0 = filter_n0
-    log('using filter_m0={0}'.format(fm0))
-    log('using filter_n0={0}'.format(fn0))
+    msg('using filter_m0={0}'.format(fm0))
+    msg('using filter_n0={0}'.format(fn0))
     if funcnum==1:
         if 0 in fm0:
             raise ValueError('For funcnum==1 m0 starts at 1!')
@@ -936,7 +936,7 @@ def filter_c0(m0, n0, c0, filter_m0, filter_n0, funcnum=2):
                 [4*(m0*j + i) + 3 for j in fn0 for i in range(m0)])
     c0_filtered = c0.copy()
     c0_filtered[pos] = 0
-    log('Filter applied!')
+    msg('Filter applied!')
     return c0_filtered
 
 
@@ -978,8 +978,8 @@ def fa(m0, n0, zs_norm, thetas, funcnum=2):
         zsmin = zs.min()
         zsmax = zs.max()
         if zsmin < 0 or zsmax > 1:
-            log('zs.min()={0}'.format(zsmin))
-            log('zs.max()={0}'.format(zsmax))
+            msg('zs.min()={0}'.format(zsmin))
+            msg('zs.max()={0}'.format(zsmax))
             raise ValueError('The zs array must be normalized!')
         if funcnum==1:
             a = np.array([[sin(i*pi*zs)*sin(j*ts), sin(i*pi*zs)*cos(j*ts)]
