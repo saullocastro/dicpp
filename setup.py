@@ -46,9 +46,9 @@ def get_version_info(version, is_released):
     return fullversion
 
 
-def write_version_py(version, is_released, filename='postdic/version.py'):
+def write_version_py(version, is_released, filename='dicpp/version.py'):
     fullversion = get_version_info(version, is_released)
-    with open("./postdic/version.py", "wb") as f:
+    with open("./dicpp/version.py", "wb") as f:
         f.write(b'__version__ = "%s"\n' % fullversion.encode())
     return fullversion
 
@@ -100,9 +100,9 @@ include_dirs = [
             ]
 
 extensions = [
-    Extension('postdic.fit_data_core',
+    Extension('dicpp.fit_data_core',
         sources=[
-            './postdic/fit_data_core.pyx',
+            './dicpp/fit_data_core.pyx',
             ],
         include_dirs=include_dirs,
         extra_compile_args=compile_args,
@@ -122,14 +122,14 @@ data_files = [('', [
         ])]
 
 s = setup(
-    name = "postdic",
+    name = "dicpp",
     version = fullversion,
     author = "Saullo G. P. Castro",
     author_email = "S.G.P.Castro@tudelft.nl",
-    description = ("Post processing routines for Digital Image Correlation (DIC)"),
+    description = ("Digital Image Correlation (DIC) Post Processing "),
     license = "2-Clause BSD",
     keywords = "shell; cylindrical; conical; measurement; imperfection; digital image correlation",
-    url = "https://github.com/saullocastro/postdic",
+    url = "https://github.com/saullocastro/dicpp",
     data_files=data_files,
     long_description=read('README.md'),
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],

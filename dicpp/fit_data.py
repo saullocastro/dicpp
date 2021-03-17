@@ -1,8 +1,8 @@
 r"""
-Fitting Data (:mod:`postdic.fit_data`)
+Fitting Data (:mod:`dicpp.fit_data`)
 ==================================================
 
-.. currentmodule:: postdic.fit_data
+.. currentmodule:: dicpp.fit_data
 
 This module includes functions used to fit measured imperfection data.
 
@@ -16,7 +16,6 @@ from scipy.sparse.linalg import aslinearoperator
 from scipy.optimize import least_squares, lsq_linear
 
 from .logger import *
-from .constants import FLOAT
 
 
 def calc_Rx(a):
@@ -46,7 +45,7 @@ def calc_radius_ellipse(a, b, thetarad):
 
 
 def best_fit_cylinder(path, H, R_expected=10.,
-        best_fit_with_given_radius=False,
+        best_fit_with_fixed_radius=False,
         save=False,
         sample_size=None, alpha0=0.5, beta0=0.5, x0=None,
         y0=None, z0=None, z1=None, clip_box=None,
@@ -125,9 +124,9 @@ def best_fit_cylinder(path, H, R_expected=10.,
         The nominal radius of the cylinder, used as a first guess to find
         the best-fit radius (``R_best_fit``). Note that, if not specified, more
         iterations may be required.
-    best_fit_with_given_radius : bool, optional
-        If ``True``, the value of ``R_expected`` is used to find the best fit
-        outputs.
+    best_fit_with_fixed_radius : bool, optional
+        If ``True``, a constant value given by ``R_expected`` is used to
+        calculate the best fit.
     save : bool, optional
         Whether to save an ``"output_best_fit.txt"`` in the working directory.
     sample_size : None or int, optional
@@ -177,7 +176,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
     For a given cylinder with expected radius and height of ``R_expected`` and
     ``H``::
 
-        from postdic.fit_data import best_fit_cylinder
+        from dicpp.fit_data import best_fit_cylinder
 
         out = best_fit_cylinder(path, H=H, R_expected=R_expected)
         R_best_fit = out['R_best_fit']
@@ -281,8 +280,8 @@ def best_fit_cylinder(path, H, R_expected=10.,
     if z1 is None:
         z1 = -1
 
-    # performing the least_squares analysis
-    if best_fit_with_given_radius:
+    # performing the least_squares optimization
+    if best_fit_with_fixed_radius:
         p = [alpha0, beta0, x0, y0, z0]
         bounds = ((-pi, -pi, -inf, -inf, -inf),
                   (pi, pi, inf, inf, inf))
@@ -346,6 +345,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
 
 
 def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
+        best_fit_with_fixed_a=False,
         save=False, alpha0=0.5, beta0=0.5, gamma0=0., x0=None,
         y0=None, z0=None, z1=None, clip_box=None,
         a_min=-1e6, a_max=1e6, b_min=-1e6, b_max=1e6, loadtxt_kwargs={},
@@ -423,6 +423,9 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         The minor radius of the elliptic cylinder, used as a first guess to find
         the best-fit minor radius (``b_best_fit``). Note that if not specified more
         iterations may be required.
+    best_fit_with_fixed_a : bool, optional
+        If ``True``, a constant value given by ``a_expected`` is used to
+        calculate the best fit.
     save : bool, optional
         Whether to save an ``"output_best_fit.txt"`` in the working directory.
     alpha0, beta0, gamma0, x0, y0 ,z0, z1: float, optional
@@ -468,7 +471,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     For a given elliptic cylinder with expected radii and height of ``a_expected``,
     ``b_expected`` and ``H``::
 
-        from postdic.fit_data import best_fit_elliptic_cylinder
+        from dicpp.fit_data import best_fit_elliptic_cylinder
 
         out = best_fit_elliptic_cylinder(path, H=H, a_expected=a_expected,
         b_expected=b_expected)
@@ -532,11 +535,23 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
         return dist
 
     def calc_dist_ellipse(p, interm_pts):
-        Rz = calc_Rz(p[0])
+        gammarad = p[0]
         a, b = p[1:]
+        Rz = calc_Rz(gammarad)
         xn, yn, zn = Rz @ interm_pts
         t = np.arctan2(yn, xn)
         rellipse = calc_radius_ellipse(a, b, t)
+        dr = np.sqrt(xn**2 + yn**2) - rellipse
+        dist = np.sqrt(dr*dr)
+        return dist
+
+    def calc_dist_ellipse_fixed_a(p, interm_pts):
+        gammarad = p[0]
+        b = p[1]
+        Rz = calc_Rz(gammarad)
+        xn, yn, zn = Rz @ interm_pts
+        t = np.arctan2(yn, xn)
+        rellipse = calc_radius_ellipse(a_expected, b, t)
         dr = np.sqrt(xn**2 + yn**2) - rellipse
         dist = np.sqrt(dr*dr)
         return dist
@@ -569,7 +584,7 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     if z1 is None:
         z1 = -1
 
-    # performing the least_squares analysis
+    # performing the least_squares optimization
     p = [alpha0, beta0, x0, y0, z0]
     bounds = ((-pi, -pi, -inf, -inf, -inf),
               (pi, pi, inf, inf, inf))
@@ -584,16 +599,28 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
     x0, y0, z0 = popt[2:]
     interm_pts1 = (Ry @ Rx @ (input_pts_clip + np.array([x0, y0, z0])[:, None]))
 
-    p = [gamma0, a_expected, b_expected]
-    bounds = ((-pi/2, a_min, b_min),
-              (+pi/2, a_max, b_max))
-    res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
-            args=(interm_pts1, ), **ls_kwargs)
-    print('least_squares status', res.message)
-    popt = res.x
-    gamma = popt[0]
+    if best_fit_with_fixed_a:
+        p = [gamma0, b_expected]
+        bounds = ((-pi/2, b_min),
+                  (+pi/2, b_max))
+        res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
+                args=(interm_pts1, ), **ls_kwargs)
+        print('least_squares status', res.message)
+        gamma = res.x[0]
+        a_best_fit = a_expected
+        b_best_fit = res.x[1]
+
+    else:
+        p = [gamma0, a_expected, b_expected]
+        bounds = ((-pi/2, a_min, b_min),
+                  (+pi/2, a_max, b_max))
+        res = least_squares(fun=calc_dist_ellipse, x0=p, bounds=bounds,
+                args=(interm_pts1, ), **ls_kwargs)
+        print('least_squares status', res.message)
+        gamma = res.x[0]
+        a_best_fit, b_best_fit = res.x[1:]
+
     Rz = calc_Rz(gamma)
-    a_best_fit, b_best_fit = popt[1:]
     interm_pts2 = Rz @ interm_pts1
 
     bounds = ([-inf], [+inf])

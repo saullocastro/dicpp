@@ -1,8 +1,8 @@
 r"""
-Read/Write (:mod:`postdic.read_write`)
+Read/Write (:mod:`dicpp.read_write`)
 ==================================================
 
-.. currentmodule::postdic.read_write
+.. currentmodule::dicpp.read_write
 
 This module includes functions to read and write imperfection files.
 
@@ -11,7 +11,6 @@ import os
 
 import numpy as np
 
-from .constants import *
 from .logger import *
 from .fit_data import best_fit_cylinder
 
@@ -78,7 +77,7 @@ def read_theta_z_imp(path,
         mps = path
     else:
         log('Reading imperfection file: {0} ...'.format(path))
-        mps = np.loadtxt(path, dtype=FLOAT, **loadtxt_kwargs)
+        mps = np.loadtxt(path, dtype=np.float64, **loadtxt_kwargs)
 
     # measuring model dimensions
     z_min = mps[:, 1].min()
@@ -186,7 +185,7 @@ def read_xyz(path,
     if isinstance(path, np.ndarray):
         mps = path
     else:
-        mps = np.loadtxt(path, dtype=FLOAT, **loadtxt_kwargs)
+        mps = np.loadtxt(path, dtype=np.float64, **loadtxt_kwargs)
     r = np.sqrt(mps[:, 0]**2 + mps[:, 1]**2)
     # measuring model dimensions
     if R_best_fit is None:

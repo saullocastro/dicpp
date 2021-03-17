@@ -1,16 +1,16 @@
 r"""
 ===============================================================
-Digital Image Correlation (:mod:`postdic`)
+Digital Image Correlation (:mod:`dicpp`)
 ===============================================================
 
-.. currentmodule:: postdic
+.. currentmodule:: dicpp
 
 Post processing tools for DIC data of cylindrical shells.
 
-.. automodule:: postdic.fit_data
+.. automodule:: dicpp.fit_data
     :members:
 
-.. automodule:: postdic.interpolate
+.. automodule:: dicpp.interpolate
     :members:
 
 """

@@ -45,9 +45,8 @@ def test_best_fit():
             loadtxt_kwargs=dict(delimiter=',', usecols=(2, 3, 4), skiprows=1),
             **kwargs)
     assert np.isclose(ans['z1'], -344.9784240010439)
-
     ans = best_fit_cylinder(name, H, R_expected=R,
-            best_fit_with_given_radius=True,
+            best_fit_with_fixed_radius=True,
             save=False, clip_box=clip_box, x0=x,
             y0=y, z0=z, alpha0=np.pi/2, beta0=-0.01,
             loadtxt_kwargs=dict(delimiter=',', usecols=(2, 3, 4), skiprows=1),
@@ -62,4 +61,10 @@ def test_best_fit():
             y0=y, z0=z, alpha0=np.pi/2, beta0=-0.01,
             gamma0=-0.01, loadtxt_kwargs=dict(delimiter=',',
                     usecols=(2, 3, 4), skiprows=1), **kwargs)
+    assert np.isclose(ans['z1'], -379.67854023453316)
+    ans = best_fit_elliptic_cylinder(name, H, a_expected=R, b_expected=R,
+            best_fit_with_fixed_a=True, save=False, clip_box=clip_box, x0=x,
+            y0=y, z0=z, alpha0=np.pi/2, beta0=-0.01, gamma0=-0.01,
+            loadtxt_kwargs=dict(delimiter=',', usecols=(2, 3, 4), skiprows=1),
+            **kwargs)
     assert np.isclose(ans['z1'], -379.67854023453316)
