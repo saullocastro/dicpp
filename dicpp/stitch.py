@@ -132,11 +132,11 @@ def stitch(bf1, bf2,
         dist, out = inv_weighted(dr, xyz, xyz_mesh, ncp=10, power_parameter=1.7)
         return out
 
-    xyz1, deltar1 = get_xyz_imp([0, 0], bf1, pos_deg=pos_deg_1)
+    xyz1, deltar1 = get_xyz_imp([0, 0], bf1, pos_deg=pos_deg1)
     dr1 = dr_at_probing_line(xyz1, deltar1)
 
     def fun(p):
-        xyz2, deltar2 = get_xyz_imp(p, bf2, pos_deg=pos_deg_2)
+        xyz2, deltar2 = get_xyz_imp(p, bf2, pos_deg=pos_deg2)
         dr2 = dr_at_probing_line(xyz2, deltar2)
         return (dr1 - dr2)**2
 
@@ -156,7 +156,7 @@ def stitch(bf1, bf2,
               [opt_var_z_max+zinit, opt_var_deg_max+anginit]]
     res = least_squares(fun, x0=[zinit, anginit], bounds=bounds, **ls_kwargs)
     assert res.success
-    xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg_2)
+    xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg2)
     dr2 = dr_at_probing_line(xyz2, deltar1)
 
     out = dict(delta_deg=res.x[1], delta_z=res.x[0], dr1=dr1, dr2=dr2)
