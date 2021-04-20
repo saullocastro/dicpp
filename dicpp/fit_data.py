@@ -338,9 +338,9 @@ def best_fit_cylinder(path, H, R_expected=10.,
             args=(interm_pts, ), **ls_kwargs)
     if verbose: msg('least_squares status: ' + res.message, level=2)
     z1 = res.x[0]
-    interm_pts[2] += z1
 
-    output_pts = interm_pts
+    output_pts = Ry.dot(Rx.dot(input_pts + np.array([x0, y0, z0])[:, None]))
+    output_pts[2] += z1
 
     if verbose:
         msg('First translation:', level=1)
@@ -677,9 +677,9 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
             args=(interm_pts2, ), **ls_kwargs)
     if verbose: msg('least_squares status: ' + res.message, level=2)
     z1 = res.x[0]
-    interm_pts2[2] += z1
 
-    output_pts = interm_pts2
+    output_pts = (Rz @ Ry @ Rx @ (input_pts + np.array([x0, y0, z0])[:, None]))
+    output_pts[2] += z1
 
     if verbose:
         msg('First translation:', level=1)
