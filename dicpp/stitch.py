@@ -24,9 +24,12 @@ def stitch(bf1, bf2,
         probe_deg, probe_R, probe_zarray, probe_dist_deg=10,
         init_deg_min=-10, init_deg_max=+10, init_deg_step=11,
         init_z_min=-20, init_z_max=+20, init_z_step=11,
-        opt_var_z_min=-10., opt_var_z_max=+10., opt_var_deg_min=-10., opt_var_deg_max=+10.,
+        opt_var_z_min=-10., opt_var_z_max=+10.,
+        opt_var_deg_min=-10., opt_var_deg_max=+10.,
+        error_dr1dr2=None,
+        inv_weighted_kwargs=dict(ncp=10, power_parameter=1.7),
         ls_kwargs=dict(ftol=None, xtol=1e-4, gtol=None, method='trf',
-            max_nfev=1000, jac='3-point', diff_step=0.2)):
+            max_nfev=1000, jac='3-point', diff_step=0.05)):
     r"""
     Calculate `\Delta \theta_2` and `\Delta z_2` that stitches the second best fit
     results to the first.
@@ -61,6 +64,11 @@ def stitch(bf1, bf2,
         for the stitching optimization.
     opt_var_z_min, opt_var_z_max, opt_var_deg_min, opt_var_deg_max : float, optional
         Variation from initial point to be used in the stitching optimization.
+    error_dr1dr2 : function, optional
+        Error function in the format ``f(dr1, dr2)`` used in the stitching
+        optimization. The default functions is ``(dr1 - dr2)**2``.
+    inv_weighted_kwargs : dict, optional
+        Keyword arguments paased to :func:`.inv_weighted`.
     ls_kwargs : dict, optional
         Keyword arguments passed to ``scipy.optimize.least_squares``.
 
@@ -83,7 +91,7 @@ def stitch(bf1, bf2,
             line.
 
     """
-    def get_xyz_imp(p, bf, pos_deg, pos1=True):
+    def get_xyz_imp(p, bf, pos_deg):
         delta_z = p[0]
         delta_deg = p[1]
         Rx = calc_Rx(bf['alpharad'])
@@ -126,8 +134,8 @@ def stitch(bf1, bf2,
         Rz = calc_Rz(deg2rad(pos_deg))
         xyz = (Rz @ xyz.T).T
         #trimming
-        ang1, ang2 = deg2rad([probe_deg-probe_dist_deg,
-            probe_deg+probe_dist_deg])
+        ang1 = deg2rad(probe_deg-probe_dist_deg)
+        ang2 = deg2rad(probe_deg+probe_dist_deg)
         theta = np.arctan2(xyz[:, 1], xyz[:, 0])
         valid = (theta >= ang1) & (theta <= ang2)
         theta = theta[valid]
@@ -140,16 +148,19 @@ def stitch(bf1, bf2,
         xyz_mesh[:, 0] = probe_R*np.cos(deg2rad(probe_deg))
         xyz_mesh[:, 1] = probe_R*np.sin(deg2rad(probe_deg))
         xyz_mesh[:, 2] = probe_zarray
-        dist, out = inv_weighted(dr, xyz, xyz_mesh, ncp=10, power_parameter=1.7)
+        dist, out = inv_weighted(dr, xyz, xyz_mesh, **inv_weighted_kwargs)
         return out
 
-    xyz1, deltar1 = get_xyz_imp([0, 0], bf1, pos_deg=pos_deg1, pos1=True)
+    xyz1, deltar1 = get_xyz_imp([0, 0], bf1, pos_deg=pos_deg1)
     dr1 = dr_at_probing_line(xyz1, deltar1)
 
+    if error_dr1dr2 is None:
+        error_dr1dr2 = lambda dr1, dr2: (dr1 - dr2)**2
+
     def fun(p):
-        xyz2, deltar2 = get_xyz_imp(p, bf2, pos_deg=pos_deg2, pos1=False)
+        xyz2, deltar2 = get_xyz_imp(p, bf2, pos_deg=pos_deg2)
         dr2 = dr_at_probing_line(xyz2, deltar2)
-        return (dr1 - dr2)**2
+        return error_dr1dr2(dr1, dr2)
 
     # determining initial point for the stitching optimization
     refvalue = 1e+40
@@ -163,11 +174,11 @@ def stitch(bf1, bf2,
                 zinit = z
                 anginit = ang
     # stitching optimization
-    bounds = [[opt_var_z_min+zinit, opt_var_deg_min+anginit],
-              [opt_var_z_max+zinit, opt_var_deg_max+anginit]]
+    bounds = [[opt_var_z_min + zinit, opt_var_deg_min + anginit],
+              [opt_var_z_max + zinit, opt_var_deg_max + anginit]]
     res = least_squares(fun, x0=[zinit, anginit], bounds=bounds, **ls_kwargs)
     assert res.success
-    xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg2, pos1=False)
+    xyz2, deltar1 = get_xyz_imp(res.x, bf2, pos_deg=pos_deg2)
     dr2 = dr_at_probing_line(xyz2, deltar1)
 
     out = dict(delta_z=res.x[0], delta_deg=res.x[1], dr1=dr1, dr2=dr2)
