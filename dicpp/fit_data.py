@@ -217,10 +217,11 @@ def best_fit_cylinder(path, H, R_expected=10.,
 
 
     """
-    if verbose: msg('Best-fit cylinder for: ' + path)
     if isinstance(path, np.ndarray):
+        if verbose: msg('Best-fit cylinder for given input array')
         input_pts = path.T
     else:
+        if verbose: msg('Best-fit cylinder for: ' + path)
         input_pts = np.loadtxt(path, unpack=True, **loadtxt_kwargs)
 
     if input_pts.shape[0] != 3:
@@ -232,7 +233,7 @@ def best_fit_cylinder(path, H, R_expected=10.,
             input_pts = input_pts[:, sample(range(num), int(sample_size))]
 
     if clip_box is not None:
-        msg('appying clip_box', level=1)
+        if verbose: msg('appying clip_box', level=1)
         assert len(clip_box) == 6, 'Clip box must be [xmin, xmax, ymin, ymax, zmin, zmax]'
         x, y, z = input_pts
         clip_box_mask = ((clip_box[0] <= x) &
@@ -540,10 +541,11 @@ def best_fit_elliptic_cylinder(path, H, a_expected=10., b_expected=10.,
 
 
     """
-    if verbose: msg('Best-fit elliptic cylinder for: ' + path)
     if isinstance(path, np.ndarray):
+        if verbose: msg('Best-fit elliptic cylinder for given input array')
         input_pts = path.T
     else:
+        if verbose: msg('Best-fit elliptic cylinder for: ' + path)
         input_pts = np.loadtxt(path, unpack=True, **loadtxt_kwargs)
 
     if input_pts.shape[0] != 3:
