@@ -49,52 +49,52 @@ def fa(m0, n0, np.ndarray[cDOUBLE, ndim=1] zs,
 cdef void *cf1(int size, int m0, int n0, int num,
                double *zs, double *thetas, double *a) nogil:
     cdef double z, theta
-    cdef int l, i, j, col
+    cdef int l, i, j, pos
 
     for l in range(num):
         theta = thetas[l]
         z = zs[l]
         for i in range(1, m0+1):
             for j in range(n0):
-                col = (i-1)*size + j*m0*size
-                a[l*(size*m0*n0) + (col+0)] = sin(i*pi*z)*sin(j*theta)
-                a[l*(size*m0*n0) + (col+1)] = sin(i*pi*z)*cos(j*theta)
+                pos = (i-1)*size + j*m0*size
+                a[l*(size*m0*n0) + (pos+0)] = sin(i*pi*z)*sin(j*theta)
+                a[l*(size*m0*n0) + (pos+1)] = sin(i*pi*z)*cos(j*theta)
 
 cdef void *cf2(int size, int m0, int n0, int num,
                double *zs, double *thetas, double *a) nogil:
     cdef double z, theta
-    cdef int l, i, j, col
+    cdef int l, i, j, pos
 
     for l in range(num):
         theta = thetas[l]
         z = zs[l]
         for i in range(m0):
             for j in range(n0):
-                col = i*size + j*m0*size
-                a[l*(size*m0*n0) + (col+0)] = cos(i*pi*z)*sin(j*theta)
-                a[l*(size*m0*n0) + (col+1)] = cos(i*pi*z)*cos(j*theta)
+                pos = i*size + j*m0*size
+                a[l*(size*m0*n0) + (pos+0)] = cos(i*pi*z)*sin(j*theta)
+                a[l*(size*m0*n0) + (pos+1)] = cos(i*pi*z)*cos(j*theta)
 
 cdef void *cf3(int size, int m0, int n0, int num,
                double *zs, double *thetas, double *a) nogil:
     cdef double z, theta
-    cdef int l, i, j, col
+    cdef int l, i, j, pos
 
     for l in range(num):
         theta = thetas[l]
         z = zs[l]
         for i in range(m0):
             for j in range(n0):
-                col = i*size + j*m0*size
-                a[l*(size*m0*n0) + (col+0)] = sin(i*pi*z)*sin(j*theta)
-                a[l*(size*m0*n0) + (col+1)] = sin(i*pi*z)*cos(j*theta)
-                a[l*(size*m0*n0) + (col+2)] = cos(i*pi*z)*sin(j*theta)
-                a[l*(size*m0*n0) + (col+3)] = cos(i*pi*z)*cos(j*theta)
+                pos = i*size + j*m0*size
+                a[l*(size*m0*n0) + (pos+0)] = sin(i*pi*z)*sin(j*theta)
+                a[l*(size*m0*n0) + (pos+1)] = sin(i*pi*z)*cos(j*theta)
+                a[l*(size*m0*n0) + (pos+2)] = cos(i*pi*z)*sin(j*theta)
+                a[l*(size*m0*n0) + (pos+3)] = cos(i*pi*z)*cos(j*theta)
 
 def fw0(int m0, int n0,
         np.ndarray[cDOUBLE, ndim=1] c0,
         np.ndarray[cDOUBLE, ndim=1] xs,
         np.ndarray[cDOUBLE, ndim=1] ts, funcnum):
-    cdef int ix, i, j, col, size
+    cdef int ix, i, j, row, size
     cdef double x, t, sinix, cosix, sinjt, cosjt, w0
     cdef np.ndarray[cDOUBLE, ndim=1] w0s
     w0s = np.zeros_like(xs)
@@ -114,9 +114,9 @@ def fw0(int m0, int n0,
                 cosjt = cos(j*t)
                 for i in range(1, m0+1):
                     sinix = sin(i*pi*x)
-                    col = (i-1)*2 + j*m0*2
-                    w0 += c0[col+0]*sinix*sinjt
-                    w0 += c0[col+1]*sinix*cosjt
+                    row = 2*(i-1) + 2*j*m0
+                    w0 += c0[row+0]*sinix*sinjt
+                    w0 += c0[row+1]*sinix*cosjt
             w0s[ix] = w0
     elif funcnum==2:
         for ix in range(size):
@@ -128,9 +128,9 @@ def fw0(int m0, int n0,
                 cosjt = cos(j*t)
                 for i in range(m0):
                     cosix = cos(i*pi*x)
-                    col = i*2 + j*m0*2
-                    w0 += c0[col+0]*cosix*sinjt
-                    w0 += c0[col+1]*cosix*cosjt
+                    row = 2*i + 2*j*m0
+                    w0 += c0[row+0]*cosix*sinjt
+                    w0 += c0[row+1]*cosix*cosjt
             w0s[ix] = w0
     elif funcnum==3:
         for ix in range(size):
@@ -143,11 +143,11 @@ def fw0(int m0, int n0,
                 for i in range(m0):
                     sinix = sin(i*pi*x)
                     cosix = cos(i*pi*x)
-                    col = i*4 + j*m0*4
-                    w0 += c0[col+0]*sinix*sinjt
-                    w0 += c0[col+1]*sinix*cosjt
-                    w0 += c0[col+2]*cosix*sinjt
-                    w0 += c0[col+3]*cosix*cosjt
+                    row = 4*i + 4*j*m0
+                    w0 += c0[row+0]*sinix*sinjt
+                    w0 += c0[row+1]*sinix*cosjt
+                    w0 += c0[row+2]*cosix*sinjt
+                    w0 += c0[row+3]*cosix*cosjt
             w0s[ix] = w0
 
     return w0s

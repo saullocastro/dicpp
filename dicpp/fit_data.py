@@ -809,7 +809,43 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
     Returns
     -------
     out : np.ndarray
-        A 1-D array with the best-fit coefficients.
+        A 1-D array with the best-fit coefficients, in the following order::
+
+            if funcnum==1:
+                w0 = 0
+                for j in range(n0):
+                    sinjt = sin(j*t)
+                    cosjt = cos(j*t)
+                    for i in range(1, m0+1):
+                        sinix = sin(i*pi*x)
+                        row = 2*(i-1) + 2*j*m0
+                        w0 += c0[row+0]*sinix*sinjt
+                        w0 += c0[row+1]*sinix*cosjt
+
+            elif funcnum==2:
+                w0 = 0
+                for j in range(n0):
+                    sinjt = sin(j*t)
+                    cosjt = cos(j*t)
+                    for i in range(m0):
+                        cosix = cos(i*pi*x)
+                        row = 2*i + 2*j*m0
+                        w0 += c0[row+0]*cosix*sinjt
+                        w0 += c0[row+1]*cosix*cosjt
+
+            elif funcnum==3:
+                w0 = 0
+                for j in range(n0):
+                    sinjt = sin(j*t)
+                    cosjt = cos(j*t)
+                    for i in range(m0):
+                        sinix = sin(i*pi*x)
+                        cosix = cos(i*pi*x)
+                        row = 4*i + 4*j*m0
+                        w0 += c0[row+0]*sinix*sinjt
+                        w0 += c0[row+1]*sinix*cosjt
+                        w0 += c0[row+2]*cosix*sinjt
+                        w0 += c0[row+3]*cosix*cosjt
 
     Notes
     -----
