@@ -13,7 +13,6 @@ import pickle
 
 import numpy as np
 from numpy import sin, cos, pi, inf, deg2rad
-from scipy.sparse.linalg import aslinearoperator
 from scipy.optimize import least_squares, lsq_linear
 
 from .logger import *
@@ -858,8 +857,6 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
         n_0 = m_0 \frac{\pi(R_{bot}+R_{top})}{2H}
 
     """
-    from scipy.linalg import lstsq
-
     if isinstance(path, np.ndarray):
         input_pts = path
         path = 'unmamed.txt'
@@ -902,8 +899,7 @@ def calc_c0(path, m0=50, n0=50, funcnum=2, fem_meridian_bot2top=True,
         zs *= -1
         zs += 1
 
-    a = fa(m0, n0, zs, ts, funcnum)
-    A = aslinearoperator(a)
+    A = fa(m0, n0, zs, ts, funcnum)
     msg('Base functions calculated', level=1)
     res = lsq_linear(A, w0pts)
     c0 = res.x
