@@ -8,6 +8,11 @@ Coverage status:
 
 [![Codecov Status](https://codecov.io/gh/saullocastro/dicpp/branch/master/graph/badge.svg?token=9DL3BYE18U)](https://codecov.io/gh/saullocastro/dicpp)
 
+Documentation
+-------------
+
+The documentation is available on: https://saullocastro.github.io/dicpp/
+
 License
 -------
 Distrubuted in the 2-Clause BSD license (https://raw.github.com/saullocastro/postdic/master/LICENSE).
