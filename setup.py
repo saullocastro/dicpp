@@ -11,7 +11,7 @@ from Cython.Build import cythonize
 
 
 is_released = True
-version = '0.1.6'
+version = '0.1.7'
 
 
 def git_version():
@@ -113,7 +113,7 @@ extensions = [
 
 ext_modules = cythonize(extensions,
         compiler_directives={'linetrace': True},
-        language_level = '3',
+        language_level='3',
         )
 
 data_files = [('', [
@@ -127,15 +127,16 @@ s = setup(
     author = "Saullo G. P. Castro",
     author_email = "S.G.P.Castro@tudelft.nl",
     description = ("Digital Image Correlation (DIC) Post Processing "),
+    long_description = read('README.md'),
+    long_description_content_type = 'text/markdown',
     license = "2-Clause BSD",
     keywords = "shell; cylindrical; conical; measurement; imperfection; digital image correlation",
     url = "https://github.com/saullocastro/dicpp",
-    data_files=data_files,
-    long_description=read('README.md'),
-    classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
-    install_requires=install_requires,
+    data_files = data_files,
+    classifiers = [_f for _f in CLASSIFIERS.split('\n') if _f],
+    install_requires = install_requires,
     ext_modules = ext_modules,
-    include_package_data=True,
-    packages=find_packages(),
+    packages = find_packages(),
+    include_package_data = True,
 )
 
